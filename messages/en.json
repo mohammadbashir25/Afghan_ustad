@@ -1,0 +1,321 @@
+{
+  "Navbar": {
+    "brandName": "AfghanUstad",
+    "brandFullName": "AfghanUstad Educational Center",
+    "mainNavigation": "Main navigation"
+  },
+  "Hero": {
+    "eyebrow": "Computer & technology education",
+    "headline": "Real technology skills, built step by step.",
+    "description": "AfghanUstad helps you learn computers and technology through hands-on practice, so every lesson turns into a skill you can use.",
+    "visual": {
+      "pathLabel": "Your learning path"
+    },
+    "stages": {
+      "learn": {
+        "title": "Learn",
+        "text": "Start with clear lessons and solid foundations."
+      },
+      "practice": {
+        "title": "Practice",
+        "text": "Apply each idea through hands-on exercises."
+      },
+      "build": {
+        "title": "Build skills",
+        "text": "Turn practice into abilities you can rely on."
+      },
+      "progress": {
+        "title": "Progress",
+        "text": "Move forward with confidence, one step at a time."
+      }
+    }
+  },
+  "Common": {
+    "home": "Home",
+    "about": "About Us",
+    "courses": "Courses",
+    "skillCenter": "Skill Center",
+    "successStories": "Success Stories",
+    "contact": "Contact Us",
+    "faq": "FAQ",
+    "enrollNow": "Enroll Now",
+    "menu": "Menu",
+    "close": "Close",
+    "language": "Language",
+    "english": "English",
+    "dari": "Dari",
+    "pashto": "Pashto",
+    "exploreCourses": "Explore Courses",
+    "learnMore": "Learn More"
+  },
+  "landing": {
+    "valueProposition": {
+      "heading": "Skills grow by doing, not only by watching.",
+      "intro": "AfghanUstad is built around a simple loop: understand an idea, try it yourself, use it on something real, and see how far you have come.",
+      "note": "Learning takes time and effort. AfghanUstad gives you a clear structure to build on.",
+      "exampleLabel": "Example lesson",
+      "exampleTitle": "Build a monthly budget in a spreadsheet",
+      "exampleLead": "In this lesson",
+      "pillars": {
+        "learn": {
+          "label": "Learn",
+          "title": "Understand the idea clearly",
+          "description": "Short, focused lessons in your own language explain one concept at a time, so you know what you are doing and why.",
+          "example": "See what a formula does and why it is useful."
+        },
+        "practice": {
+          "label": "Practice",
+          "title": "Build skill with hands-on practice",
+          "description": "Exercises let you repeat, make mistakes and correct them before you move on to the next step.",
+          "example": "Solve short exercises until entering formulas feels natural."
+        },
+        "apply": {
+          "label": "Apply",
+          "title": "Use it on real tasks",
+          "description": "Small projects connect each lesson to tasks you may meet outside the course.",
+          "example": "Build a real monthly budget you can keep using."
+        },
+        "progress": {
+          "label": "Progress",
+          "title": "See how far you have come",
+          "description": "Clear milestones show what you have finished and what comes next, at a pace that suits you.",
+          "example": "Review what you completed, then move on to the next lesson."
+        }
+      }
+    },
+    "about": {
+      "eyebrow": "About AfghanUstad",
+      "heading": "Technology skills, taught in the language you think in.",
+      "story": {
+        "p1": "AfghanUstad is a learning platform for computer and technology skills, built for Afghan learners. Every lesson is explained in clear, familiar language, so the idea comes first and the jargon follows.",
+        "p2": "We pair each concept with hands-on practice and real projects. Learners don't just watch: they try, make mistakes, and build confidence step by step."
+      },
+      "quote": "Understand it. Practice it. Build with it.",
+      "principlesLabel": "What we believe",
+      "principles": {
+        "language": {
+          "title": "Your language comes first",
+          "description": "Lessons in English, Dari, and Pashto, so language is never the barrier to learning technology."
+        },
+        "understanding": {
+          "title": "Understanding before memorizing",
+          "description": "We explain the why behind each idea, so skills carry over beyond a single tutorial."
+        },
+        "practice": {
+          "title": "Practice is the lesson",
+          "description": "Exercises sit inside every topic, not after it, so knowledge turns into ability."
+        },
+        "everyone": {
+          "title": "Room for every beginner",
+          "description": "Clear starting points and small steps make it possible to begin from zero."
+        }
+      },
+      "cta": "Read our story",
+      "visual": {
+        "ariaLabel": "An abstract learning path rising through a geometric pattern, beside a card showing one lesson in three languages.",
+        "imageAlt": "AfghanUstad learners at work",
+        "cardTitle": "One lesson, three languages",
+        "badge": "Learn by doing",
+        "samples": {
+          "en": "Learn to code",
+          "fa": "کدنویسی را یاد بگیرید",
+          "ps": "کوډ لیکل زده کړئ"
+        },
+        "imagePlaceholder": "Photo of the AfghanUstad learning space goes here"
+      },
+      "facts": {
+        "founded": "Founded",
+        "location": "Based in"
+      }
+    },
+    "courses": {
+      "eyebrow": "Courses",
+      "heading": "Find the course that fits where you are.",
+      "description": "A curated selection of AfghanUstad courses. Each one pairs clear explanations with hands-on practice.",
+      "filters": {
+        "label": "Filter courses by category",
+        "all": "All courses"
+      },
+      "resultCount": "{count, plural, one {# course shown} other {# courses shown}}",
+      "featuredBadge": "Featured course",
+      "card": {
+        "view": "View course"
+      },
+      "meta": {
+        "lessons": "{count, plural, one {# lesson} other {# lessons}}"
+      },
+      "level": {
+        "beginner": "Beginner",
+        "intermediate": "Intermediate",
+        "advanced": "Advanced"
+      },
+      "empty": {
+        "title": "No courses here yet",
+        "description": "Try another category, or browse the full catalog.",
+        "reset": "Show all courses"
+      },
+      "cta": {
+        "viewAll": "View all courses",
+        "title": "Looking for something specific?",
+        "description": "The full catalog lets you browse every course and category.",
+        "button": "Browse all courses"
+      },
+      "loading": "Loading courses"
+    },
+    "verification": {
+      "eyebrow": "Student Verification",
+      "heading": "Confirm a student's record with confidence.",
+      "description": "Enter a verification ID or a student name to check a record with AfghanUstad. The result is clear, simple, and available in your language.",
+      "steps": {
+        "enter": {
+          "title": "Enter the details",
+          "description": "Use the verification ID for the most exact match, or search by the student's name."
+        },
+        "check": {
+          "title": "We look up the record",
+          "description": "The details you enter are compared against AfghanUstad's student records."
+        },
+        "result": {
+          "title": "See the result",
+          "description": "You are told whether a matching record exists, along with the details it confirms."
+        }
+      },
+      "trust": {
+        "lookup": "Lookup by ID or name",
+        "language": "English, Dari and Pashto",
+        "privacy": "Only what's needed to confirm a record is shown"
+      },
+      "cta": {
+        "page": "Go to the verification page"
+      },
+      "card": {
+        "title": "Verify a student",
+        "subtitle": "Search by verification ID or by name."
+      },
+      "status": {
+        "ready": "Ready",
+        "notConnected": "Not connected yet"
+      },
+      "form": {
+        "modeLabel": "Search by",
+        "modes": {
+          "id": "Verification ID",
+          "name": "Student name"
+        },
+        "fields": {
+          "id": {
+            "label": "Verification ID",
+            "placeholder": "Enter the verification ID",
+            "helper": "The most exact way to find a record."
+          },
+          "name": {
+            "label": "Student name",
+            "placeholder": "Enter the student's full name",
+            "helper": "Use the full name as it was registered."
+          }
+        },
+        "submit": "Verify",
+        "submitting": "Checking…",
+        "errors": {
+          "required": "Please enter a value to search.",
+          "tooShort": "Enter at least {min} characters."
+        },
+        "unavailable": {
+          "title": "Online verification isn't available from this form yet.",
+          "description": "Please use the verification page for the current way to confirm a student."
+        }
+      },
+      "result": {
+        "checking": "Checking the record…",
+        "verified": {
+          "title": "Record verified",
+          "description": "This student matches a record held by AfghanUstad."
+        },
+        "notFound": {
+          "title": "No matching record",
+          "description": "We couldn't find a record matching “{query}”."
+        },
+        "error": {
+          "title": "Something went wrong",
+          "description": "We couldn't complete the check. Please try again in a moment."
+        },
+        "fields": {
+          "studentName": "Student name",
+          "verificationId": "Verification ID",
+          "courseTitle": "Course",
+          "issuedOn": "Date"
+        },
+        "tips": {
+          "spelling": "Check the spelling or the ID for typing mistakes.",
+          "otherMode": "Try the other search type: ID or name."
+        },
+        "actions": {
+          "another": "Verify another student",
+          "retry": "Try again",
+          "edit": "Edit search"
+        }
+      }
+    },
+    "successStories": {
+      "eyebrow": "Success Stories",
+      "heading": "Stories from the people who learn here.",
+      "description": "Every story shared here is told by the learner and published with their permission.",
+      "card": {
+        "outcomeLabel": "Outcome",
+        "imagePlaceholder": "Learner photo"
+      },
+      "carousel": {
+        "label": "Success stories",
+        "slide": "slide",
+        "slideLabel": "Story {current} of {total}",
+        "previous": "Previous story",
+        "next": "Next story",
+        "goTo": "Go to story {number}",
+        "pause": "Pause automatic sliding",
+        "play": "Start automatic sliding",
+        "counter": "{current} / {total}"
+      },
+      "empty": {
+        "title": "Stories from our learners will appear here.",
+        "description": "We only publish real stories that learners have chosen to share and approved. Until then, this space stays open for them.",
+        "slots": {
+          "photo": "A photo shared by the learner",
+          "story": "Their story, in their own words",
+          "outcome": "What they achieved, as they describe it"
+        },
+        "cta": "Explore courses"
+      }
+    },
+    "FinalCTA": {
+      "eyebrow": "Ready to begin",
+      "title": "Your next step starts here.",
+      "description": "Choose a course, ask us a question, or take the first step toward real technology skills. Learning starts with a single decision.",
+      "note": "Not sure where to begin? Browse the courses first, or get in touch and we will help you find the right place to start.",
+      "visual": {
+        "steps": {
+          "learn": "Learn",
+          "practice": "Practice",
+          "build": "Build",
+          "next": "Your next step"
+        }
+      }
+    }
+  },
+  "Footer": {
+    "brandName": "AfghanUstad Educational Center",
+    "tagline": "Practical computer and technology education, one step at a time.",
+    "copyright": "© {year} {name}. All rights reserved.",
+    "navigation": "Footer navigation",
+    "social": "Follow AfghanUstad",
+    "groups": { "explore": "Explore", "academy": "Academy" },
+    "contact": {
+      "title": "Contact",
+      "email": "Email",
+      "phone": "Phone",
+      "address": "Address",
+      "hours": "Business hours"
+    },
+    "legal": { "privacy": "Privacy Policy", "terms": "Terms of Use" },
+    "developer": { "label": "Developed by", "name": "Mohammad Bashir" }
+  }
+}
