@@ -35,8 +35,15 @@ type Props = {
   }>;
 };
 
+// Reads your real address; falls back to Vercel's production URL, then localhost.
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : "http://localhost:3000");
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://afghanustad.com"),
+  metadataBase: new URL(siteUrl),
 
   title: {
     default: "AfghanUstad | Computer & Technology Education",
@@ -84,7 +91,7 @@ export const metadata: Metadata = {
     title: "AfghanUstad | Computer & Technology Education",
     description:
       "Learn practical computer and technology skills with AfghanUstad.",
-    url: "https://afghanustad.com/en",
+    url: siteUrl,
     images: [
       {
         url: "/og-image.png",
