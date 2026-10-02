@@ -317,5 +317,615 @@
     },
     "legal": { "privacy": "Privacy Policy", "terms": "Terms of Use" },
     "developer": { "label": "Developed by", "name": "Mohammad Bashir" }
+  },
+  "pages": {
+    "about": {
+      "meta": {
+        "title": "About AfghanUstad",
+        "description": "AfghanUstad is a learning platform for computer and technology skills, built around clear explanations, hands-on practice and your own language."
+      },
+      "hero": {
+        "eyebrow": "About AfghanUstad",
+        "title": "Technology in your language, learn by building.",
+        "description": "AfghanUstad is a learning platform for computer and technology skills, made for Afghan learners. We explain clearly, practice constantly, and move one step at a time.",
+        "primaryCta": "Explore courses",
+        "secondaryCta": "Read our story",
+        "strip": {
+          "teach": {
+            "label": "What we teach",
+            "value": "Computer and technology skills"
+          },
+          "method": {
+            "label": "How we teach",
+            "value": "Clear lessons, then hands-on practice"
+          },
+          "language": {
+            "label": "In your language",
+            "value": "English, Dari and Pashto"
+          }
+        },
+        "visual": {
+          "ariaLabel": "An abstract learning path rising through a geometric arch, with a checklist that moves from understanding to practice to building.",
+          "sheetTitle": "Learn, practice, build",
+          "step1": "Understand the idea",
+          "step2": "Practice it yourself",
+          "step3": "Build something real",
+          "pill": "Learn by doing"
+        }
+      },
+      "story": {
+        "eyebrow": "Our story",
+        "title": "Why AfghanUstad exists",
+        "quote": "Learning technology shouldn't mean learning a new language first.",
+        "p1": "Technology opens doors, but too often it arrives in a language learners don't use at home, explained through jargon, and taught by watching instead of doing.",
+        "p2": "AfghanUstad began from a simple belief: people learn technology best when it is explained in words they know and practiced with their own hands.",
+        "p3": "So every lesson is written to be understood first. Every idea is followed by something to try. And every learner is trusted to move at the pace that works for them.",
+        "noteLabel": "In short",
+        "note": "Clear language. Real practice. Steady progress."
+      },
+      "approach": {
+        "eyebrow": "Educational philosophy",
+        "title": "How we think about learning",
+        "description": "Four beliefs shape every lesson on AfghanUstad.",
+        "tabsLabel": "Our beliefs",
+        "exampleLabel": "What this looks like",
+        "items": {
+          "understanding": {
+            "title": "Understanding comes first",
+            "statement": "If you know why something works, you can use it anywhere.",
+            "detail": "We explain the reasoning behind every concept before asking you to apply it, so skills carry over to new problems instead of staying tied to one tutorial.",
+            "example": "A short explanation, a worked example, then your turn."
+          },
+          "practice": {
+            "title": "Practice is the lesson",
+            "statement": "You don't learn to use a computer by watching someone else use it.",
+            "detail": "Exercises sit inside each topic, not after it. Mistakes are part of the process, and every attempt moves you forward.",
+            "example": "Each topic ends with something you do, not something you read."
+          },
+          "steps": {
+            "title": "Small steps, real progress",
+            "statement": "Big skills are built from small, finished steps.",
+            "detail": "Lessons are cut into short, clear pieces, so you always know what you are learning now and what comes next.",
+            "example": "One idea per step, and a clear sense of where you are."
+          },
+          "language": {
+            "title": "Your language, your pace",
+            "statement": "Learning is faster when language isn't the obstacle.",
+            "detail": "Lessons are available in English, Dari and Pashto, and nobody is rushed. You can return to any step as often as you need.",
+            "example": "Switch language any time; the lesson stays the same."
+          }
+        }
+      },
+      "learning": {
+        "focus": {
+          "eyebrow": "What we focus on",
+          "title": "Everyday skills first, then deeper ones.",
+          "description": "Our courses grow from the basics of using a computer to programming and web development.",
+          "items": {
+            "fundamentals": {
+              "title": "Computer fundamentals",
+              "description": "Files, the internet, email and the everyday skills everything else builds on."
+            },
+            "programming": {
+              "title": "Programming",
+              "description": "Thinking in logic and writing real programs, step by step."
+            },
+            "web": {
+              "title": "Web development",
+              "description": "Building pages and tools that people can open and use."
+            }
+          }
+        },
+        "loop": {
+          "eyebrow": "How we learn",
+          "title": "Learning and practice are one loop",
+          "description": "Learning is not a straight line, it's a loop. Each step feeds the next.",
+          "tabsLabel": "The learning loop",
+          "returnLabel": "Then back to learning, with more confidence",
+          "connectsLabel": "How it connects",
+          "steps": {
+            "learn": {
+              "title": "Learn",
+              "description": "Meet one idea at a time, explained clearly in your language.",
+              "link": "Everything starts here, but it never stays here for long."
+            },
+            "practice": {
+              "title": "Practice",
+              "description": "Try it yourself straight away, with room to make mistakes.",
+              "link": "Practice is where an idea becomes a skill."
+            },
+            "build": {
+              "title": "Build",
+              "description": "Put the ideas together in small projects that are yours.",
+              "link": "Projects show you what you can already do."
+            },
+            "progress": {
+              "title": "Progress",
+              "description": "See how far you've come, then take the next step.",
+              "link": "Progress sends you back to learning with more confidence."
+            }
+          }
+        }
+      },
+      "skillCenter": {
+        "eyebrow": "Skill Center",
+        "title": "Where lessons turn into skills",
+        "description": "The Skill Center is the practice side of AfghanUstad. Ideas from your lessons come back as tasks to try, so what you learned becomes something you can do.",
+        "points": {
+          "tasks": "Tasks connected to the lessons you take",
+          "retry": "Room to try, get it wrong, and try again",
+          "progress": "A clear sense of your own progress"
+        },
+        "cta": "Visit the Skill Center",
+        "card": {
+          "title": "Practice session",
+          "caption": "Illustration of a practice flow",
+          "rows": {
+            "review": "Review the idea",
+            "try": "Try the task",
+            "check": "Check your work",
+            "next": "Move to the next step"
+          }
+        }
+      },
+      "values": {
+        "eyebrow": "Our values",
+        "title": "What we stand for",
+        "description": "These are the commitments behind every lesson, page and decision.",
+        "items": {
+          "clarity": {
+            "title": "Clarity",
+            "description": "We would rather be understood than sound impressive."
+          },
+          "respect": {
+            "title": "Respect for the learner",
+            "description": "Every learner arrives with their own language, pace and goals, and we design for that."
+          },
+          "honesty": {
+            "title": "Honesty",
+            "description": "We make no promises we can't keep, and we show only what is true."
+          },
+          "patience": {
+            "title": "Patience",
+            "description": "Learning takes repetition. We build lessons that welcome it."
+          },
+          "access": {
+            "title": "Access",
+            "description": "Good technology education should be reachable by anyone ready to start."
+          }
+        }
+      },
+      "cta": {
+        "eyebrow": "Next step",
+        "title": "Start with one lesson. See where it takes you.",
+        "description": "Choose a course, take the first step, and learn at your own pace.",
+        "primary": "Explore courses",
+        "secondary": "Contact us"
+      }
+    }
+  },
+  "coursesPage": {
+    "meta": {
+      "title": "Courses | AfghanUstad",
+      "description": "Browse AfghanUstad computer and technology courses, compare levels and find the right place to start."
+    },
+    "hero": {
+      "breadcrumbHome": "Home",
+      "breadcrumbCurrent": "Courses",
+      "eyebrow": "Courses",
+      "title": "Find the course that fits where you are.",
+      "lead": "Browse computer and technology courses built around hands-on practice. Search, filter by level or topic, and open any course to see the details.",
+      "stats": {
+        "courses": "Courses",
+        "categories": "Topics",
+        "levels": "Levels"
+      }
+    },
+    "discovery": {
+      "searchLabel": "Search courses",
+      "searchPlaceholder": "Search by course name or topic",
+      "clearSearch": "Clear search",
+      "levelLabel": "Level",
+      "categoryLabel": "Topic",
+      "all": "All",
+      "results": "Showing {shown} of {count, plural, one {{total} course} other {{total} courses}}",
+      "resetFilters": "Reset filters"
+    },
+    "categories": {
+      "computerBasics": "Computer basics",
+      "programming": "Programming",
+      "web": "Web",
+      "productivity": "Productivity"
+    },
+    "levels": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced"
+    },
+    "status": {
+      "open": "Open",
+      "comingSoon": "Coming soon"
+    },
+    "card": {
+      "viewCourse": "View course",
+      "duration": "{count} weeks"
+    },
+    "featured": {
+      "badge": "Featured course",
+      "cta": "Explore this course",
+      "glance": "At a glance",
+      "topic": "Topic",
+      "level": "Level",
+      "duration": "Duration",
+      "status": "Status"
+    },
+    "states": {
+      "empty": {
+        "title": "Courses are on the way",
+        "text": "New courses will appear here soon. Please check back shortly."
+      },
+      "noResults": {
+        "title": "No courses match your search",
+        "text": "Try a different word, or remove a filter to see more courses.",
+        "action": "Reset filters"
+      }
+    },
+    "guidance": {
+      "title": "Not sure where to start?",
+      "lead": "Every course shows its level, so you can pick one that matches your experience.",
+      "levelsTitle": "Understanding levels",
+      "levelDescriptions": {
+        "beginner": "No previous experience needed. You start from the basics.",
+        "intermediate": "You know the basics and want to go deeper with more complex tasks.",
+        "advanced": "You are comfortable with the fundamentals and ready for demanding work."
+      },
+      "stepsTitle": "How to get started",
+      "steps": {
+        "choose": {
+          "title": "Choose a course",
+          "description": "Use search and filters to find a topic and level that suits you."
+        },
+        "review": {
+          "title": "Read the details",
+          "description": "Open the course page to see what it covers before you decide."
+        },
+        "enroll": {
+          "title": "Enroll and begin",
+          "description": "Complete your enrollment and start with the first lesson."
+        }
+      }
+    },
+    "cta": {
+      "title": "Ready to start learning?",
+      "text": "Pick a course and take the first step, or get in touch if you have questions.",
+      "primary": "Enroll now",
+      "secondary": "Contact us"
+    },
+    "detail": {
+      "back": "All courses",
+      "factsTitle": "Course details",
+      "topic": "Topic",
+      "level": "Level",
+      "duration": "Duration",
+      "enroll": "Enroll in this course",
+      "soonNote": "Enrollment for this course is not open yet. Contact us if you would like to hear when it opens.",
+      "askQuestion": "Ask a question",
+      "relatedTitle": "More courses to explore"
+    }
+  },
+  "skillCenter": {
+    "meta": {
+      "title": "Skill Center | AfghanUstad",
+      "description": "See how the AfghanUstad Skill Center turns lessons into skills through guided practice, assignments, feedback and visible progress."
+    },
+    "hero": {
+      "badge": "Skill Center",
+      "title": "Where lessons turn into skills.",
+      "lead": "The AfghanUstad Skill Center is a structured space for practice. After each lesson you work on real tasks, get guidance when you are stuck, and see your progress build step by step.",
+      "primary": "Explore courses",
+      "secondary": "See how it works",
+      "ribbonTitle": "A skill is built in steps"
+    },
+    "overview": {
+      "eyebrow": "What it is",
+      "title": "More than a room full of computers.",
+      "description": "The Skill Center is where what you learn in a course becomes something you can do. Practice here has a purpose, a plan and someone to ask.",
+      "note": "Details about equipment, schedules and access are shared by the AfghanUstad team.",
+      "points": {
+        "structured": {
+          "title": "Practice with a plan",
+          "description": "Tasks follow what each course teaches, so you always know why you are doing them."
+        },
+        "help": {
+          "title": "Help while you work",
+          "description": "Support is part of the process, so a problem becomes a step forward instead of a dead end."
+        },
+        "goals": {
+          "title": "Work with a clear goal",
+          "description": "Assignments describe what to build or solve and what good work looks like."
+        },
+        "progress": {
+          "title": "Progress you can see",
+          "description": "You can look back at what you have completed and see what comes next."
+        }
+      }
+    },
+    "practice": {
+      "eyebrow": "Why practice matters",
+      "title": "You learn a skill by using it.",
+      "text": "Watching a lesson is the start. A skill becomes yours when you apply it, make mistakes and try again.",
+      "principles": {
+        "doing": {
+          "title": "Understanding is not the same as doing",
+          "description": "An idea can seem clear until you try to use it. Practice shows what you really understand."
+        },
+        "mistakes": {
+          "title": "Mistakes are useful",
+          "description": "An error points to exactly what to review. Practice is the safe place to make them."
+        },
+        "repetition": {
+          "title": "Repetition builds confidence",
+          "description": "Using a skill several times, on different tasks, makes it feel natural."
+        }
+      }
+    },
+    "guidance": {
+      "eyebrow": "How practice is supported",
+      "title": "Practice, guided from task to feedback.",
+      "description": "Choose a part of the process to see how it works.",
+      "tablist": "Parts of guided practice",
+      "howLabel": "How it works",
+      "leadsTo": "Leads to",
+      "tabs": {
+        "guided": {
+          "label": "Guided practice",
+          "title": "Practice that follows the lesson",
+          "description": "Each practice session starts from what you just learned. You work on the task yourself, and support is there when you get stuck.",
+          "points": {
+            "one": "Tasks match the lesson you are studying",
+            "two": "You try things yourself first",
+            "three": "You can ask for help when a step is unclear"
+          },
+          "next": "Assignments"
+        },
+        "assignments": {
+          "label": "Assignments",
+          "title": "Practical work with a clear goal",
+          "description": "Assignments ask you to build, fix or solve something with the skills from a lesson, so you apply them beyond a single exercise.",
+          "points": {
+            "one": "A clear description of the goal",
+            "two": "Work that connects to the course",
+            "three": "A clear point where the task is complete"
+          },
+          "next": "Feedback"
+        },
+        "feedback": {
+          "label": "Feedback",
+          "title": "Know what to improve",
+          "description": "After practical work you hear what went well and what to improve, so the next attempt starts from something concrete.",
+          "points": {
+            "one": "What worked is pointed out",
+            "two": "What to improve is explained",
+            "three": "You can use it in your next task"
+          },
+          "next": "Progress"
+        }
+      }
+    },
+    "journey": {
+      "eyebrow": "The whole journey",
+      "title": "From a lesson to a skill, step by step.",
+      "description": "Each stage prepares the next. Together they turn what you study into something you can do.",
+      "stageLabel": "Stage",
+      "items": {
+        "learn": {
+          "title": "Learn",
+          "description": "Start in the course with a clear lesson on one idea."
+        },
+        "practice": {
+          "title": "Practice",
+          "description": "Try the idea yourself in the Skill Center with a task built on the lesson."
+        },
+        "guidance": {
+          "title": "Guidance",
+          "description": "Get support when something is unclear, so you can keep moving."
+        },
+        "assignment": {
+          "title": "Assignment",
+          "description": "Apply what you learned to a practical piece of work."
+        },
+        "feedback": {
+          "title": "Feedback",
+          "description": "Learn what worked and what to improve."
+        },
+        "progress": {
+          "title": "Progress",
+          "description": "See what you have completed and what comes next."
+        },
+        "goal": {
+          "title": "Skill development",
+          "description": "Over time, repeated practice builds skills you can use with confidence."
+        }
+      }
+    },
+    "courseToSkill": {
+      "eyebrow": "Courses and the Skill Center",
+      "title": "Two places, one learning path.",
+      "description": "Courses explain. The Skill Center lets you use what you learned. They are designed to work together.",
+      "courseColumn": "In the course",
+      "skillColumn": "In the Skill Center",
+      "browse": "Browse courses",
+      "pairs": {
+        "lesson": {
+          "course": "A lesson explains an idea",
+          "skill": "A practice task puts it to use"
+        },
+        "exercise": {
+          "course": "Exercises check your understanding",
+          "skill": "Guidance helps when you are stuck"
+        },
+        "project": {
+          "course": "Projects connect lessons to real tasks",
+          "skill": "Assignments let you apply the skill"
+        },
+        "milestone": {
+          "course": "Milestones mark what you have finished",
+          "skill": "Feedback shows what to improve next"
+        }
+      }
+    },
+    "cta": {
+      "title": "Ready to start practicing?",
+      "text": "Choose a course, then use the Skill Center to turn each lesson into a skill. Questions? We are happy to help.",
+      "primary": "Explore courses",
+      "secondary": "Contact us"
+    }
+  },
+  "successStories": {
+    "meta": {
+      "title": "Success Stories | AfghanUstad",
+      "description": "Learning journeys from AfghanUstad learners, shared with their approval and in their own words."
+    },
+    "hero": {
+      "eyebrow": "Success stories",
+      "title": "Learning journeys, in the learner's own words.",
+      "lead": "This page shares stories from AfghanUstad learners, only with their approval. Each one shows what steady, hands-on learning can look like for a real person."
+    },
+    "featured": {
+      "label": "Featured story",
+      "anonymous": "AfghanUstad learner",
+      "course": "Course",
+      "result": "Result",
+      "date": "Year",
+      "pathTitle": "Learning path"
+    },
+    "grid": {
+      "eyebrow": "More stories",
+      "title": "Stories from our learners",
+      "description": "Browse by topic to find a journey close to yours.",
+      "filterLabel": "Filter by topic",
+      "all": "All stories"
+    },
+    "empty": {
+      "title": "Stories are on their way.",
+      "text": "We are gathering learner stories, and each one is shared only with the learner's permission. Until then, you can explore how learning works at AfghanUstad.",
+      "primary": "Explore courses",
+      "secondary": "See the Skill Center",
+      "inviteTitle": "Already learning with us?",
+      "inviteText": "If you would like to share your experience, we would be glad to hear from you.",
+      "inviteAction": "Get in touch"
+    },
+    "context": {
+      "eyebrow": "Before every story",
+      "title": "Every story begins with a first step.",
+      "description": "Each learner's path is different. What they share is a way of learning: one clear step after another.",
+      "steps": {
+        "start": {
+          "title": "Start with a course",
+          "text": "Pick a course that matches your level and begin with the first lesson.",
+          "link": "Browse courses"
+        },
+        "practice": {
+          "title": "Practice what you learn",
+          "text": "Use the Skill Center to turn each lesson into something you can do.",
+          "link": "Visit the Skill Center"
+        },
+        "grow": {
+          "title": "Grow step by step",
+          "text": "Every completed task and milestone shows how far you have come."
+        }
+      }
+    },
+    "cta": {
+      "title": "Have a learning story to share?",
+      "text": "If AfghanUstad has been part of your journey, we would love to hear it. Stories are only published with your approval.",
+      "primary": "Share your story",
+      "secondary": "Explore courses"
+    }
+  },
+  "contactPage": {
+    "meta": {
+      "title": "Contact | AfghanUstad",
+      "description": "Get in touch with AfghanUstad by phone, email or the contact form."
+    },
+    "hero": {
+      "eyebrow": "Contact us",
+      "title": "Let's talk about your learning.",
+      "lead": "Have a question about a course, enrollment or the Skill Center? Reach out and the AfghanUstad team will help you find the right next step."
+    },
+    "details": {
+      "eyebrow": "Get in touch",
+      "title": "Choose the way that suits you.",
+      "text": "Call, write an email or send a message through the form.",
+      "phone": "Phone",
+      "email": "Email",
+      "address": "Address",
+      "hours": "Opening hours",
+      "phoneHint": "Tap to call",
+      "emailHint": "Tap to write",
+      "formNote": "Prefer to write? The form on this page is the quickest way to send us the details."
+    },
+    "form": {
+      "title": "Send us a message",
+      "description": "Tell us a little about what you need. We use your details only to reply.",
+      "fields": {
+        "name": {
+          "label": "Full name",
+          "placeholder": "Your name"
+        },
+        "contact": {
+          "label": "Email or phone number",
+          "placeholder": "name@example.com or phone number",
+          "hint": "We will reply using this."
+        },
+        "subject": {
+          "label": "Subject",
+          "placeholder": "Choose a subject"
+        },
+        "message": {
+          "label": "Message",
+          "placeholder": "How can we help?"
+        }
+      },
+      "subjects": {
+        "courses": "Course information",
+        "enrollment": "Enrollment",
+        "skillCenter": "Skill Center",
+        "other": "Something else"
+      },
+      "counter": "{count} / {max}",
+      "submit": "Send message",
+      "submitting": "Sending…",
+      "errors": {
+        "required": "This field is required.",
+        "nameShort": "Please enter your full name.",
+        "contactInvalid": "Enter a valid email address or phone number.",
+        "messageShort": "Please write at least {min} characters.",
+        "messageLong": "Please keep your message under {max} characters."
+      },
+      "success": {
+        "title": "Message sent",
+        "text": "Thank you for reaching out. Your message is on its way to the AfghanUstad team.",
+        "again": "Send another message"
+      },
+      "error": {
+        "title": "We could not send your message",
+        "text": "Please try again. If the problem continues, contact us by phone or email."
+      }
+    },
+    "methods": {
+      "callTitle": "Prefer to talk?",
+      "callText": "Speak to the team directly by phone.",
+      "callAction": "Call us",
+      "faqTitle": "Looking for quick answers?",
+      "faqText": "Many common questions are answered in our FAQ.",
+      "faqAction": "Read the FAQ"
+    },
+    "cta": {
+      "title": "Ready to start learning?",
+      "text": "Explore the courses and choose the one that fits where you are.",
+      "primary": "Explore courses",
+      "secondary": "Visit the Skill Center"
+    }
   }
 }

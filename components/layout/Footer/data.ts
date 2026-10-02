@@ -63,7 +63,7 @@ export const FOOTER_LINK_GROUPS: readonly FooterLinkGroup[] = [
   {
     id: "explore",
     titleKey: "groups.explore",
-    links: [fromNav("home"), fromNav("courses"), fromNav("skill-center"), fromNav("faq")],
+    links: [fromNav("home"), fromNav("courses"), fromNav("skill-center")],
   },
   {
     id: "academy",

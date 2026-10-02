@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import type { ComponentPropsWithoutRef, MouseEvent, ReactNode } from "react";
 import { cn } from "./utils";
@@ -25,10 +27,14 @@ type ButtonBase = {
 };
 
 export type ButtonAsButton = ButtonBase &
-  Omit<ComponentPropsWithoutRef<"button">, keyof ButtonBase> & { href?: undefined };
+  Omit<ComponentPropsWithoutRef<"button">, keyof ButtonBase> & {
+    href?: undefined;
+  };
 
 export type ButtonAsLink = ButtonBase &
-  Omit<ComponentPropsWithoutRef<"a">, keyof ButtonBase | "href"> & { href: string };
+  Omit<ComponentPropsWithoutRef<"a">, keyof ButtonBase | "href"> & {
+    href: string;
+  };
 
 export type ButtonProps = ButtonAsButton | ButtonAsLink;
 
@@ -47,7 +53,8 @@ const VARIANT: Record<ButtonVariant, string> = {
     "after:transition-transform after:duration-500 after:ease-out rtl:after:origin-right hover:after:scale-x-100 " +
     "motion-reduce:after:transition-none",
   secondary: "bg-primary-light text-primary-dark hover:bg-accent-light",
-  outline: "border border-border-strong text-foreground hover:border-primary hover:bg-primary-light/50",
+  outline:
+    "border border-border-strong text-foreground hover:border-primary hover:bg-primary-light/50",
   ghost: "text-primary-dark hover:bg-primary-light",
 };
 
@@ -59,9 +66,26 @@ const SIZE: Record<ButtonSize, string> = {
 
 function Spinner() {
   return (
-    <svg aria-hidden viewBox="0 0 24 24" fill="none" className="size-4 animate-spin motion-reduce:animate-none">
-      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeOpacity=".25" strokeWidth="3" />
-      <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+    <svg
+      aria-hidden
+      viewBox="0 0 24 24"
+      fill="none"
+      className="size-4 animate-spin motion-reduce:animate-none"
+    >
+      <circle
+        cx="12"
+        cy="12"
+        r="9"
+        stroke="currentColor"
+        strokeOpacity=".25"
+        strokeWidth="3"
+      />
+      <path
+        d="M21 12a9 9 0 0 0-9-9"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }

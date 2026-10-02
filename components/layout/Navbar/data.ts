@@ -28,8 +28,11 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { id: "about", labelKey: "about", href: "/about" },
   { id: "courses", labelKey: "courses", href: "/courses" },
   { id: "skill-center", labelKey: "skillCenter", href: "/skill-center" },
-  { id: "faq", labelKey: "faq", href: "/faq" },
-  { id: "success-stories", labelKey: "successStories", href: "/success-stories" },
+  {
+    id: "success-stories",
+    labelKey: "successStories",
+    href: "/success-stories",
+  },
   { id: "contact", labelKey: "contact", href: "/contact" },
 ];
 
