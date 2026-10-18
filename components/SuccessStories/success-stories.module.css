@@ -1,0 +1,783 @@
+/*
+ * Success Stories — scoped styles (shared by all components in this folder)
+ * ---------------------------------------------------------------------------
+ * Plain CSS module for page-specific layout; shared UI (Button, Badge,
+ * SectionHeading, Divider…) keeps its own styling. Palette reads your global
+ * --color-* variables with the AfghanUstad hex values as fallback.
+ * Logical properties only → layouts mirror correctly in RTL.
+ */
+
+.section {
+  --c-primary: var(--color-primary, #0b6b4f);
+  --c-primary-dark: var(--color-primary-dark, #053b2e);
+  --c-primary-light: var(--color-primary-light, #e6f4ee);
+  --c-accent: var(--color-accent, #f4c430);
+  --c-accent-light: var(--color-accent-light, #fff4c2);
+  --c-accent-dark: var(--color-accent-dark, #c99a00);
+  --c-bg: var(--color-background, #f8fafc);
+  --c-surface: var(--color-surface, #ffffff);
+  --c-muted: var(--color-surface-muted, #f1f5f3);
+  --c-fg: var(--color-foreground, #12372e);
+  --c-text2: var(--color-text-secondary, #64748b);
+  --c-border: var(--color-border, #dce7e2);
+  --c-border-strong: var(--color-border-strong, #b8ccc4);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  position: relative;
+  color: var(--c-fg);
+  padding-block: clamp(4rem, 8vw, 7rem);
+}
+
+.dirIcon {
+  --dir: 1;
+  transform: scaleX(var(--dir));
+}
+:global([dir="rtl"]) .dirIcon {
+  --dir: -1;
+}
+
+/* Persian / Pashto: no negative tracking, looser leading. */
+:global([dir="rtl"]) .heroTitle,
+:global([dir="rtl"]) .emptyTitle,
+:global([dir="rtl"]) .ctaTitle,
+:global([dir="rtl"]) .stepTitle {
+  letter-spacing: 0;
+  line-height: 1.4;
+}
+:global([dir="rtl"]) .heroLead,
+:global([dir="rtl"]) .emptyText,
+:global([dir="rtl"]) .inviteText,
+:global([dir="rtl"]) .featuredStory,
+:global([dir="rtl"]) .cardStory,
+:global([dir="rtl"]) .stepText,
+:global([dir="rtl"]) .ctaText {
+  line-height: 2;
+}
+
+/* ── Shared decorative pieces ────────────────────────────────────────── */
+.pattern {
+  position: absolute;
+  inset: 0;
+  background-color: var(--c-primary-light);
+  background-image:
+    repeating-linear-gradient(45deg, transparent 0 18px, rgb(11 107 79 / 0.1) 18px 19px),
+    repeating-linear-gradient(-45deg, transparent 0 18px, rgb(11 107 79 / 0.1) 18px 19px);
+}
+
+
+/* ── Hero ────────────────────────────────────────────────────────────── */
+.hero {
+  background: var(--c-bg);
+  padding-block: clamp(3.5rem, 7vw, 6rem);
+  overflow: hidden;
+}
+.heroGrid {
+  display: grid;
+  gap: 3rem;
+}
+@media (min-width: 64rem) {
+  .heroGrid {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+    gap: 5rem;
+    align-items: center;
+  }
+}
+.heroTitle {
+  margin: 1.25rem 0 0;
+  max-width: 17ch;
+  font-size: clamp(2.4rem, 5.4vw, 4.4rem);
+  line-height: 1.08;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--c-primary-dark);
+  text-wrap: balance;
+}
+.heroLead {
+  margin: 1.5rem 0 0;
+  max-width: 38rem;
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: var(--c-text2);
+}
+
+/* ── Visual (card + featured) ────────────────────────────────────────── */
+.visualImage {
+  object-fit: cover;
+}
+.visualFallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.initial {
+  position: relative;
+  font-size: clamp(4rem, 12vw, 7rem);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--c-primary);
+}
+.fallbackIcon {
+  position: relative;
+  width: 3rem;
+  height: 3rem;
+  color: var(--c-primary);
+}
+
+/* ── Featured story (dark) ───────────────────────────────────────────── */
+.featured {
+  background: var(--c-primary-dark);
+  color: #fff;
+  overflow: hidden;
+}
+.featured::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.03) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: linear-gradient(to bottom, transparent, #000 25%, #000 75%, transparent);
+  pointer-events: none;
+}
+.featuredGrid {
+  position: relative;
+}
+.featuredGrid {
+  display: grid;
+  gap: 3rem;
+}
+@media (min-width: 64rem) {
+  .featuredGrid {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 5.5rem;
+    align-items: center;
+  }
+}
+.featuredContent {
+  display: grid;
+  gap: 1.5rem;
+  align-content: start;
+}
+.darkEyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin: 0 0 1rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--c-accent);
+}
+.darkEyebrow::before {
+  content: "";
+  width: 2.5rem;
+  height: 1px;
+  background: var(--c-accent);
+}
+:global([dir="rtl"]) .darkEyebrow {
+  letter-spacing: 0;
+  text-transform: none;
+  font-size: 0.9rem;
+}
+.featuredStory {
+  margin: 0;
+  max-width: 38rem;
+  font-size: clamp(1.35rem, 2.4vw, 1.9rem);
+  line-height: 1.45;
+  font-weight: 500;
+}
+.featuredName {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--c-accent);
+}
+.featuredMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem 2.5rem;
+  margin: 0.75rem 0 0;
+}
+.featuredMeta dt {
+  font-size: 0.78rem;
+  color: rgb(255 255 255 / 0.6);
+}
+.featuredMeta dd {
+  margin: 0.2rem 0 0;
+  font-weight: 600;
+}
+.featuredMeta a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--c-accent);
+}
+.pathTitle {
+  margin: 0.5rem 0 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--c-accent);
+}
+.path {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.path li {
+  display: flex;
+  gap: 1rem;
+  padding-block: 0.6rem;
+  border-block-start: 1px solid rgb(255 255 255 / 0.16);
+}
+.pathNum {
+  min-width: 1.75rem;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--c-accent);
+}
+
+/* ── Collection ──────────────────────────────────────────────────────── */
+.collection {
+  background: var(--c-bg);
+}
+.chips {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  margin-block: 2.25rem 2rem;
+  scrollbar-width: none;
+}
+.chips::-webkit-scrollbar {
+  display: none;
+}
+.chip,
+.chipOn {
+  flex: 0 0 auto;
+  height: 2.5rem;
+  padding-inline: 1.1rem;
+  border: 1px solid var(--c-border-strong);
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+.chip {
+  background: var(--c-surface);
+  color: var(--c-fg);
+}
+.chip:hover {
+  border-color: var(--c-primary);
+  background: var(--c-primary-light);
+}
+.chipOn {
+  border-color: var(--c-primary-dark);
+  background: var(--c-primary-dark);
+  color: #fff;
+}
+.chip:focus-visible,
+.chipOn:focus-visible {
+  outline: 2px solid var(--c-accent-dark);
+  outline-offset: 2px;
+}
+
+.grid {
+  display: grid;
+  gap: 1.5rem;
+  margin: 2.5rem 0 0;
+  padding: 0;
+  list-style: none;
+  grid-template-columns: minmax(0, 1fr);
+}
+.chips + .grid {
+  margin-block-start: 0;
+}
+@media (min-width: 40rem) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 64rem) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.grid > li {
+  display: flex;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--c-border);
+  border-radius: 8px;
+  background: var(--c-surface);
+  transition: transform 0.3s var(--ease), border-color 0.3s ease;
+}
+.card:hover,
+.card:focus-within {
+  transform: translateY(-4px);
+  border-color: var(--c-primary);
+}
+/* No photo → a calm amber rule instead of an empty media box. */
+.cardPlain {
+  border-inline-start: 4px solid var(--c-accent);
+}
+.cardMedia {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-block-end: 1px solid var(--c-border);
+}
+.cardBody {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.5rem;
+}
+.cardStory {
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  font-weight: 500;
+}
+.cardResult {
+  margin: 0;
+  padding-inline-start: 0.85rem;
+  border-inline-start: 2px solid var(--c-accent);
+  font-size: 0.925rem;
+  line-height: 1.6;
+}
+.cardResult span {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--c-primary);
+}
+.cardFooter {
+  display: grid;
+  gap: 0.2rem;
+  width: 100%;
+  margin-block-start: auto;
+  padding-block-start: 1rem;
+  border-block-start: 1px solid var(--c-border);
+}
+.cardName {
+  font-weight: 700;
+}
+.cardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.9rem;
+  font-size: 0.85rem;
+  color: var(--c-text2);
+}
+.cardCourse {
+  color: var(--c-primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+.cardCourse:hover {
+  text-decoration: underline;
+}
+
+/* ── Empty state ─────────────────────────────────────────────────────── */
+.empty {
+  background: var(--c-surface);
+}
+.emptyGrid {
+  display: grid;
+  gap: 3.5rem;
+}
+@media (min-width: 64rem) {
+  .emptyGrid {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+    gap: 6rem;
+    align-items: center;
+  }
+}
+.emptyTitle {
+  margin: 0;
+  max-width: 16ch;
+  font-size: clamp(2rem, 4vw, 3.1rem);
+  line-height: 1.12;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--c-primary-dark);
+  text-wrap: balance;
+}
+.emptyText {
+  margin: 1.25rem 0 0;
+  max-width: 36rem;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: var(--c-text2);
+}
+.emptyActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-block-start: 2rem;
+}
+.emptyDivider {
+  margin-block: 2.5rem 1.75rem;
+}
+.inviteTitle {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 650;
+}
+.inviteText {
+  margin: 0.4rem 0 0.75rem;
+  max-width: 32rem;
+  line-height: 1.65;
+  color: var(--c-text2);
+}
+
+/* ── Journey context ─────────────────────────────────────────────────── */
+.context {
+  background: var(--c-muted);
+}
+.steps {
+  display: grid;
+  margin-block-start: 3rem;
+}
+@media (min-width: 56rem) {
+  .steps {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.step {
+  display: flex;
+  height: 100%;
+  border-block-start: 1px solid var(--c-border-strong);
+}
+@media (min-width: 56rem) {
+  .step {
+    border-block-start: 0;
+  }
+}
+.stepDivider {
+  display: none;
+}
+@media (min-width: 56rem) {
+  .stepDivider {
+    display: block;
+    flex: none;
+    align-self: stretch;
+  }
+}
+.stepBody {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 1.75rem 0;
+}
+@media (min-width: 56rem) {
+  .stepBody {
+    padding: 0.5rem 2rem;
+  }
+}
+.stepNum {
+  font-size: 0.9rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--c-primary);
+}
+.stepTitle {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 650;
+  line-height: 1.3;
+}
+.stepText {
+  margin: 0;
+  line-height: 1.65;
+  color: var(--c-text2);
+}
+
+/* ── CTA ─────────────────────────────────────────────────────────────── */
+.cta {
+  background: var(--c-bg);
+}
+.ctaPanel {
+  display: grid;
+  gap: 2rem;
+  align-items: center;
+  padding: clamp(1.75rem, 4vw, 3rem);
+  border: 1px solid var(--c-border);
+  border-inline-start: 4px solid var(--c-accent);
+  border-radius: 10px;
+  background: var(--c-surface);
+}
+@media (min-width: 56rem) {
+  .ctaPanel {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 4rem;
+  }
+}
+.ctaTitle {
+  margin: 0;
+  font-size: clamp(1.7rem, 3.2vw, 2.4rem);
+  line-height: 1.15;
+  font-weight: 700;
+  color: var(--c-primary-dark);
+}
+.ctaText {
+  margin: 0.8rem 0 0;
+  max-width: 36rem;
+  line-height: 1.7;
+  color: var(--c-text2);
+}
+.ctaActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .chip,
+  .chipOn {
+    transition: none;
+  }
+  .card:hover,
+  .card:focus-within {
+    transform: none;
+  }
+}
+
+/* ── Story art (hero + empty state) ──────────────────────────────────── */
+.art {
+  --art-gap: var(--c-bg);
+  position: relative;
+  width: 100%;
+  max-width: 27rem;
+  margin-inline: auto;
+  aspect-ratio: 5 / 6;
+}
+.artOnWhite {
+  --art-gap: var(--c-surface);
+}
+/* Back arch: lattice pattern */
+.artBack {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inset-inline-end: 14%;
+  overflow: hidden;
+  border: 1px solid var(--c-border-strong);
+  border-radius: 999px 999px 10px 10px;
+  background: var(--c-primary-light);
+}
+/* Front arch: deep green, ring texture, cut out of the back arch by a gap */
+.artFront {
+  position: absolute;
+  inset-block: 15% 0;
+  inset-inline-start: 30%;
+  inset-inline-end: 0;
+  overflow: hidden;
+  border-radius: 999px 999px 8px 8px;
+  background-color: var(--c-primary-dark);
+  background-image: repeating-radial-gradient(
+    circle at 50% 36%,
+    transparent 0 22px,
+    rgb(255 255 255 / 0.06) 22px 23px
+  );
+  box-shadow: 0 0 0 7px var(--art-gap);
+}
+/* Rising sun with soft halo rings */
+.artSun {
+  position: absolute;
+  inset-block-start: 20%;
+  inset-inline-start: 50%;
+  width: 34%;
+  aspect-ratio: 1;
+  margin-inline-start: -17%;
+  border-radius: 50%;
+  background: var(--c-accent);
+  box-shadow:
+    0 0 0 12px rgb(244 196 48 / 0.2),
+    0 0 0 28px rgb(244 196 48 / 0.09);
+}
+/* Four ascending steps; flex direction mirrors in RTL so they climb the right way */
+.artSteps {
+  position: absolute;
+  inset-inline: 12%;
+  inset-block-end: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+}
+.artSteps i {
+  flex: 1;
+  border-radius: 3px 3px 0 0;
+  background: rgb(255 255 255 / 0.16);
+}
+.artSteps i:nth-child(1) { height: 2.2rem; }
+.artSteps i:nth-child(2) { height: 3.6rem; }
+.artSteps i:nth-child(3) { height: 5rem; }
+.artSteps i:nth-child(4) { height: 6.4rem; background: var(--c-accent); }
+
+/* Floating chips */
+.artQuote {
+  position: absolute;
+  inset-block-start: 7%;
+  inset-inline-end: 0;
+  display: grid;
+  place-items: center;
+  width: 3.75rem;
+  height: 3.75rem;
+  border: 1px solid var(--c-border);
+  border-radius: 10px;
+  background: var(--c-surface);
+  color: var(--c-primary);
+  animation: storyFloat 7s ease-in-out infinite;
+}
+.artQuote svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+.artQuote::after {
+  content: "";
+  position: absolute;
+  inset-block-start: -0.3rem;
+  inset-inline-start: -0.3rem;
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 50%;
+  background: var(--c-accent);
+}
+.artTag {
+  position: absolute;
+  inset-block-end: 14%;
+  inset-inline-start: -3%;
+  padding: 0.75rem 1.1rem;
+  border: 1px solid var(--c-border);
+  border-radius: 999px;
+  background: var(--c-surface);
+  animation: storyFloat 8s ease-in-out -2.5s infinite;
+}
+.artDots {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+}
+.artDots i {
+  position: relative;
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 50%;
+  background: var(--c-primary);
+}
+.artDots i + i::before {
+  content: "";
+  position: absolute;
+  inset-inline-end: 100%;
+  inset-block-start: 50%;
+  width: 1.1rem;
+  height: 2px;
+  margin-block-start: -1px;
+  background: var(--c-primary);
+  opacity: 0.35;
+}
+.artDots .artDotLast {
+  background: var(--c-accent);
+  box-shadow: 0 0 0 3px var(--c-accent-light);
+}
+@keyframes storyFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* ── Featured visual (dark section) ──────────────────────────────────── */
+.featuredVisualWrap {
+  position: relative;
+  width: 100%;
+  max-width: 28rem;
+  margin-inline: auto;
+  aspect-ratio: 4 / 5;
+}
+.featuredVisual {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 0.25);
+  border-radius: 999px 999px 10px 10px;
+  background: var(--c-primary-light);
+}
+/* Offset outlines behind the frame */
+.archRing {
+  position: absolute;
+  inset: 0;
+  inset-inline-start: 0.9rem;
+  inset-block-start: 0.9rem;
+  inset-inline-end: -0.9rem;
+  inset-block-end: -0.9rem;
+  border: 1px solid rgb(255 255 255 / 0.2);
+  border-radius: 999px 999px 10px 10px;
+}
+.archRingTwo {
+  inset-inline-start: 1.8rem;
+  inset-block-start: 1.8rem;
+  inset-inline-end: -1.8rem;
+  inset-block-end: -1.8rem;
+  border-color: rgb(244 196 48 / 0.5);
+}
+.visualChip {
+  position: absolute;
+  inset-inline-start: -1rem;
+  inset-block-end: 2.5rem;
+  display: grid;
+  gap: 0.15rem;
+  max-width: 15rem;
+  padding: 0.9rem 1.1rem;
+  border-inline-start: 3px solid var(--c-accent);
+  border-radius: 8px;
+  background: var(--c-surface);
+  color: var(--c-fg);
+}
+.visualChip span {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--c-primary);
+}
+.visualChip strong {
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+.yearTag {
+  position: absolute;
+  inset-block-start: 1.5rem;
+  inset-inline-end: -0.5rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 4px;
+  background: var(--c-accent);
+  color: var(--c-primary-dark);
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .artQuote,
+  .artTag {
+    animation: none;
+  }
+}

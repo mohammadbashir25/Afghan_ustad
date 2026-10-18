@@ -1,0 +1,716 @@
+/*
+ * Skill Center — scoped styles (shared by all section components)
+ * ---------------------------------------------------------------------------
+ * Plain CSS module for page-specific layout; shared UI (Button, Badge,
+ * SectionHeading, Divider…) keeps its own styling. Palette tokens read your
+ * global --color-* variables and fall back to the AfghanUstad hex values.
+ * Logical properties only, so layouts mirror correctly in RTL.
+ */
+
+.section {
+  --c-primary: var(--color-primary, #0b6b4f);
+  --c-primary-dark: var(--color-primary-dark, #053b2e);
+  --c-primary-light: var(--color-primary-light, #e6f4ee);
+  --c-accent: var(--color-accent, #f4c430);
+  --c-accent-light: var(--color-accent-light, #fff4c2);
+  --c-accent-dark: var(--color-accent-dark, #c99a00);
+  --c-bg: var(--color-background, #f8fafc);
+  --c-surface: var(--color-surface, #ffffff);
+  --c-muted: var(--color-surface-muted, #f1f5f3);
+  --c-fg: var(--color-foreground, #12372e);
+  --c-text2: var(--color-text-secondary, #64748b);
+  --c-border: var(--color-border, #dce7e2);
+  --c-border-strong: var(--color-border-strong, #b8ccc4);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  position: relative;
+  color: var(--c-fg);
+  padding-block: clamp(4rem, 8vw, 7rem);
+}
+
+/* Directional icons flip in RTL. */
+.dirIcon {
+  --dir: 1;
+  transform: scaleX(var(--dir));
+}
+:global([dir="rtl"]) .dirIcon {
+  --dir: -1;
+}
+
+/* Persian / Pashto: looser leading for body copy, no negative tracking. */
+:global([dir="rtl"]) .heroTitle,
+:global([dir="rtl"]) .practiceTitle,
+:global([dir="rtl"]) .panelTitle,
+:global([dir="rtl"]) .ctaTitle {
+  letter-spacing: 0;
+  line-height: 1.4;
+}
+:global([dir="rtl"]) .heroLead,
+:global([dir="rtl"]) .overviewNote,
+:global([dir="rtl"]) .pointText,
+:global([dir="rtl"]) .practiceText,
+:global([dir="rtl"]) .principleText,
+:global([dir="rtl"]) .panelText,
+:global([dir="rtl"]) .jText,
+:global([dir="rtl"]) .pairText,
+:global([dir="rtl"]) .ctaText {
+  line-height: 2;
+}
+
+/* ── Hero ────────────────────────────────────────────────────────────── */
+.hero {
+  background: var(--c-bg);
+  padding-block: clamp(3.5rem, 7vw, 6rem);
+  overflow: hidden;
+}
+.hero::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 0;
+  width: 38%;
+  display: none;
+  background-color: var(--c-primary-light);
+  background-image:
+    linear-gradient(rgb(11 107 79 / 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(11 107 79 / 0.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+  opacity: 0.7;
+}
+@media (min-width: 64rem) {
+  .hero::after {
+    display: block;
+  }
+}
+.heroGrid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 3.5rem;
+}
+@media (min-width: 64rem) {
+  .heroGrid {
+    grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+    gap: 5rem;
+    align-items: center;
+  }
+}
+.heroTitle {
+  margin: 1.25rem 0 0;
+  max-width: 14ch;
+  font-size: clamp(2.5rem, 5.6vw, 4.6rem);
+  line-height: 1.06;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--c-primary-dark);
+  text-wrap: balance;
+}
+.heroLead {
+  margin: 1.5rem 0 0;
+  max-width: 36rem;
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: var(--c-text2);
+}
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-block-start: 2rem;
+}
+
+/* Stepped ribbon: each row indents a little further than the one above. */
+.ribbon {
+  padding: 1.5rem;
+  border: 1px solid var(--c-border);
+  border-radius: 10px;
+  background: var(--c-surface);
+}
+.ribbonTitle {
+  margin: 0 0 1.1rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--c-primary);
+}
+.ribbonList {
+  display: grid;
+  gap: 0.6rem;
+}
+.ribbonRow {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.8rem 1rem;
+  margin-inline-start: calc(var(--i) * 1.1rem);
+  border: 1px solid var(--c-border);
+  border-radius: 6px;
+  background: var(--c-bg);
+  transition: border-color 0.25s ease, background-color 0.25s ease;
+}
+.ribbonRow:hover {
+  border-color: var(--c-primary);
+  background: var(--c-primary-light);
+}
+.ribbonRowLast {
+  border-color: var(--c-accent);
+  background: var(--c-accent-light);
+}
+.ribbonNum {
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--c-text2);
+}
+.ribbonIcon {
+  width: 1.1rem;
+  height: 1.1rem;
+  color: var(--c-primary);
+}
+.ribbonName {
+  font-weight: 600;
+}
+
+/* ── Overview ────────────────────────────────────────────────────────── */
+.overview {
+  background: var(--c-surface);
+}
+.overviewGrid {
+  display: grid;
+  gap: 3rem;
+}
+@media (min-width: 64rem) {
+  .overviewGrid {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    gap: 6rem;
+  }
+  .overviewIntro {
+    position: sticky;
+    top: 7rem;
+    align-self: start;
+  }
+}
+.overviewNote {
+  margin: 1.75rem 0 0;
+  padding-inline-start: 1rem;
+  border-inline-start: 2px solid var(--c-accent);
+  font-size: 0.925rem;
+  line-height: 1.7;
+  color: var(--c-text2);
+}
+.point {
+  display: flex;
+  gap: 1.1rem;
+  padding-block: 1.5rem;
+}
+.pointIcon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid var(--c-border-strong);
+  border-radius: 6px;
+  color: var(--c-primary);
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+.pointIcon svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  transition: transform 0.25s var(--ease);
+}
+.point:hover .pointIcon {
+  background: var(--c-primary);
+  border-color: var(--c-primary);
+  color: #fff;
+}
+.point:hover .pointIcon svg {
+  transform: translateY(-2px);
+}
+.pointTitle {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 650;
+}
+.pointText {
+  margin: 0.4rem 0 0;
+  line-height: 1.65;
+  color: var(--c-text2);
+}
+
+/* ── Practice (dark) ─────────────────────────────────────────────────── */
+.practice {
+  background: var(--c-primary-dark);
+  color: #fff;
+  overflow: hidden;
+}
+.practice::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.03) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: linear-gradient(to bottom, transparent, #000 25%, #000 75%, transparent);
+  pointer-events: none;
+}
+.practiceGrid {
+  position: relative;
+  display: grid;
+  gap: 3.5rem;
+}
+@media (min-width: 64rem) {
+  .practiceGrid {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    gap: 6rem;
+    align-items: start;
+  }
+}
+.darkEyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin: 0 0 1.25rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--c-accent);
+}
+.darkEyebrow::before {
+  content: "";
+  width: 2.5rem;
+  height: 1px;
+  background: var(--c-accent);
+}
+:global([dir="rtl"]) .darkEyebrow {
+  letter-spacing: 0;
+  text-transform: none;
+  font-size: 0.9rem;
+}
+.practiceTitle {
+  margin: 0;
+  font-size: clamp(2rem, 4.2vw, 3.4rem);
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+.practiceText {
+  margin: 1.4rem 0 0;
+  max-width: 30rem;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: rgb(255 255 255 / 0.75);
+}
+.principles {
+  border-block-start: 1px solid rgb(255 255 255 / 0.18);
+}
+.principle {
+  display: flex;
+  gap: 1.5rem;
+  padding: 1.6rem 0.5rem;
+  border-block-end: 1px solid rgb(255 255 255 / 0.18);
+  transition: background-color 0.3s ease;
+}
+.principle:hover {
+  background: rgb(255 255 255 / 0.05);
+}
+.principleNum {
+  flex: none;
+  min-width: 2rem;
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--c-accent);
+}
+.principleTitle {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 650;
+  line-height: 1.3;
+}
+.principleText {
+  margin: 0.5rem 0 0;
+  line-height: 1.65;
+  color: rgb(255 255 255 / 0.72);
+}
+
+/* ── Guidance (tabs) ─────────────────────────────────────────────────── */
+.guidance {
+  background: var(--c-muted);
+}
+.guidanceGrid {
+  display: grid;
+  gap: 1.5rem;
+  margin-block-start: 3rem;
+}
+@media (min-width: 56rem) {
+  .guidanceGrid {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+    gap: 2rem;
+  }
+}
+.tabList {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabList::-webkit-scrollbar {
+  display: none;
+}
+@media (min-width: 56rem) {
+  .tabList {
+    flex-direction: column;
+    overflow: visible;
+  }
+}
+.tab,
+.tabOn {
+  position: relative;
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--c-border);
+  border-radius: 8px;
+  background: var(--c-surface);
+  font: inherit;
+  font-weight: 600;
+  text-align: start;
+  color: var(--c-fg);
+  cursor: pointer;
+  transition: border-color 0.25s ease, background-color 0.25s ease, color 0.25s ease;
+}
+.tab:hover {
+  border-color: var(--c-primary);
+}
+.tab:focus-visible,
+.tabOn:focus-visible {
+  outline: 2px solid var(--c-accent-dark);
+  outline-offset: 2px;
+}
+.tabOn {
+  border-color: var(--c-primary);
+  background: var(--c-primary-light);
+}
+.tabOn::before {
+  content: "";
+  position: absolute;
+  inset-block: 0.6rem;
+  inset-inline-start: -1px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--c-accent);
+}
+.tabNum {
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--c-text2);
+}
+.tabIcon {
+  width: 1.1rem;
+  height: 1.1rem;
+  color: var(--c-primary);
+}
+.panelWrap {
+  min-height: 24rem;
+}
+.panel {
+  height: 100%;
+  padding: clamp(1.5rem, 3.5vw, 2.5rem);
+  border: 1px solid var(--c-border);
+  border-radius: 10px;
+  background: var(--c-surface);
+}
+.panelTitle {
+  margin: 1.1rem 0 0;
+  font-size: clamp(1.5rem, 2.6vw, 2.1rem);
+  line-height: 1.2;
+  font-weight: 700;
+  color: var(--c-primary-dark);
+}
+.panelText {
+  margin: 0.9rem 0 0;
+  max-width: 38rem;
+  font-size: 1.025rem;
+  line-height: 1.7;
+  color: var(--c-text2);
+}
+.panelLabel {
+  margin: 1.75rem 0 0.6rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--c-primary);
+}
+.points {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.points li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  line-height: 1.6;
+}
+.points svg {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  margin-block-start: 0.3rem;
+  color: var(--c-primary);
+}
+.panelNext {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 1.75rem 0 0;
+  padding-block-start: 1.1rem;
+  border-block-start: 1px solid var(--c-border);
+  font-size: 0.9rem;
+  color: var(--c-text2);
+}
+.panelNext strong {
+  color: var(--c-fg);
+}
+
+/* ── Journey (timeline) ──────────────────────────────────────────────── */
+.journey {
+  background: var(--c-surface);
+}
+.jList {
+  position: relative;
+  margin: 3.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+/* Rail: mobile at inline-start (node radius = 1.25rem), centred on desktop. */
+.railTrack,
+.railFill {
+  position: absolute;
+  inset-block: 1.25rem;
+  inset-inline-start: 1.25rem;
+  margin-inline-start: -1px;
+  width: 2px;
+  border-radius: 1px;
+}
+.railTrack {
+  background: var(--c-border);
+}
+.railFill {
+  background: var(--c-primary);
+  transform-origin: top;
+}
+@media (min-width: 56rem) {
+  .railTrack,
+  .railFill {
+    inset-inline-start: 50%;
+  }
+}
+.jItem {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 1.25rem;
+  padding-block-end: 2.5rem;
+}
+.jItem:last-child {
+  padding-block-end: 0;
+}
+.jNode {
+  grid-column: 1;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 2px solid var(--c-border-strong);
+  border-radius: 50%;
+  background: var(--c-surface);
+  z-index: 1;
+}
+.jNode svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+.jContent {
+  grid-column: 2;
+  padding: 1.1rem 1.25rem;
+  border: 1px solid var(--c-border);
+  border-radius: 8px;
+  background: var(--c-bg);
+  transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+.jContent:hover {
+  border-color: var(--c-primary);
+  background: var(--c-primary-light);
+}
+.jGoal {
+  border-color: var(--c-accent);
+  background: var(--c-accent-light);
+}
+.jGoal:hover {
+  border-color: var(--c-accent-dark);
+  background: var(--c-accent-light);
+}
+.jStage {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--c-primary);
+}
+.jTitle {
+  margin: 0.3rem 0 0;
+  font-size: 1.25rem;
+  font-weight: 650;
+}
+.jText {
+  margin: 0.4rem 0 0;
+  line-height: 1.65;
+  color: var(--c-text2);
+}
+@media (min-width: 56rem) {
+  .jItem {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: 2.5rem;
+    padding-block-end: 3rem;
+  }
+  .jNode {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  /* Alternate sides by grid column — mirrors automatically in RTL. */
+  .jStart > :last-child {
+    grid-column: 1;
+    grid-row: 1;
+    text-align: end;
+  }
+  .jEnd > :last-child {
+    grid-column: 3;
+    grid-row: 1;
+  }
+}
+
+/* ── Courses ⇄ Skill Center ──────────────────────────────────────────── */
+.pairs {
+  background: var(--c-primary-light);
+}
+.pairList {
+  display: grid;
+  gap: 1rem;
+  margin-block-start: 3rem;
+}
+.pair {
+  display: grid;
+  gap: 0.5rem;
+  justify-items: center;
+}
+@media (min-width: 48rem) {
+  .pair {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: 1.25rem;
+    align-items: stretch;
+  }
+}
+.pairCell {
+  width: 100%;
+  padding: 1.1rem 1.35rem;
+  border: 1px solid var(--c-border-strong);
+  border-radius: 8px;
+  background: var(--c-surface);
+  transition: border-color 0.3s ease;
+}
+.pairCell:hover {
+  border-color: var(--c-primary);
+}
+.pairCellSkill {
+  border-inline-start: 3px solid var(--c-accent);
+}
+.pairLabel {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--c-primary);
+}
+.pairText {
+  margin: 0.35rem 0 0;
+  font-size: 1.05rem;
+  line-height: 1.55;
+  font-weight: 500;
+}
+/* Connector: points down on mobile, along the reading direction on desktop. */
+.pairLink {
+  align-self: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--c-primary);
+  transform: rotate(90deg);
+}
+@media (min-width: 48rem) {
+  .pairLink {
+    transform: scaleX(1);
+  }
+  :global([dir="rtl"]) .pairLink {
+    transform: scaleX(-1);
+  }
+}
+.pairsAction {
+  margin-block-start: 2.5rem;
+}
+
+/* ── CTA ─────────────────────────────────────────────────────────────── */
+.cta {
+  background: var(--c-bg);
+}
+.ctaPanel {
+  display: grid;
+  gap: 2rem;
+  align-items: center;
+  padding: clamp(1.75rem, 4vw, 3rem);
+  border: 1px solid var(--c-border);
+  border-inline-start: 4px solid var(--c-accent);
+  border-radius: 10px;
+  background: var(--c-surface);
+}
+@media (min-width: 56rem) {
+  .ctaPanel {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 4rem;
+  }
+}
+.ctaTitle {
+  margin: 0;
+  font-size: clamp(1.7rem, 3.2vw, 2.4rem);
+  line-height: 1.15;
+  font-weight: 700;
+  color: var(--c-primary-dark);
+}
+.ctaText {
+  margin: 0.8rem 0 0;
+  max-width: 34rem;
+  line-height: 1.7;
+  color: var(--c-text2);
+}
+.ctaActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ribbonRow,
+  .pointIcon,
+  .pointIcon svg,
+  .principle,
+  .tab,
+  .tabOn,
+  .jContent,
+  .pairCell {
+    transition: none;
+  }
+  .point:hover .pointIcon svg {
+    transform: none;
+  }
+}

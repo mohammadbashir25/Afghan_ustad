@@ -1,0 +1,3 @@
+import mongoose,{Schema,models} from "mongoose";
+const guideReviewSchema=new Schema({guide:{type:Schema.Types.ObjectId,ref:"User",required:true,index:true},qualityScore:{type:Number,required:true,min:0,max:100},category:{type:String,enum:["TEACHING_QUALITY","STUDENT_PROGRESS","RELIABILITY","PROFESSIONALISM","OVERALL"],default:"OVERALL"},notes:{type:String,required:true,trim:true,maxlength:2000},improvementPlan:{type:String,default:"",maxlength:2000},reviewedBy:{type:Schema.Types.ObjectId,ref:"User",required:true},reviewDate:{type:Date,default:Date.now,index:true}},{timestamps:true});
+const GuideReview=models.GuideReview||mongoose.model("GuideReview",guideReviewSchema);export default GuideReview;
