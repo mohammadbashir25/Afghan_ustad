@@ -63,6 +63,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     metadataBase: new URL(siteUrl),
 
+    verification: {
+      google: "uu0R-QPGPnV7-qKXozdF553XGu-yarUNaoPFovr9i0U",
+    },
+
     title: {
       default: "AfghanUstad | Computer & Technology Education",
       template: "%s | AfghanUstad",
