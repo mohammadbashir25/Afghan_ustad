@@ -1,7 +1,17 @@
-import {
-  Noto_Sans,
-  Noto_Sans_Arabic,
-} from "next/font/google";
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { Analytics } from "@vercel/analytics/next";
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages } from "next-intl/server";
+import { hasLocale } from "next-intl";
+
+import { Noto_Sans, Noto_Sans_Arabic } from "next/font/google";
+
+import { routing } from "@/i18n/routing";
+import { Navbar } from "@/components/layout/Navbar/Navbar";
+import { Footer } from "@/components/layout/Footer/Footer";
+
+import "@/app/globals.css";
 
 const notoSans = Noto_Sans({
   subsets: ["latin"],
@@ -15,18 +25,10 @@ const notoSansArabic = Noto_Sans_Arabic({
   display: "swap",
 });
 
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { NextIntlClientProvider } from "next-intl";
-import { getMessages } from "next-intl/server";
-
-import { hasLocale } from "next-intl";
-import { routing } from "@/i18n/routing";
-
-
-import "@/app/globals.css";
-import { Navbar } from "@/components/layout/Navbar/Navbar";
-import { Footer } from "@/components/layout/Footer/Footer";
+// Use your real production domain.
+const siteUrl = (
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://afghanustad.com"
+).replace(/\/$/, "");
 
 type Props = {
   children: React.ReactNode;
@@ -35,96 +37,141 @@ type Props = {
   }>;
 };
 
-// Reads your real address; falls back to Vercel's production URL, then localhost.
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL ??
-  (process.env.VERCEL_PROJECT_PRODUCTION_URL
-    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-    : "http://localhost:3000");
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
 
-export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  if (!hasLocale(routing.locales, locale)) {
+    notFound();
+  }
 
-  title: {
-    default: "AfghanUstad | Computer & Technology Education",
-    template: "%s | AfghanUstad",
-  },
+  const canonicalUrl = `${siteUrl}/${locale}`;
 
-  description:
-    "AfghanUstad provides practical computer and technology education in Afghanistan, helping students build useful skills for study, work, and the modern digital world.",
+  const languageNames: Record<string, string> = {
+    en: "English",
+    fa: "Dari",
+    ps: "Pashto",
+  };
 
-  keywords: [
-    "AfghanUstad",
-    "افغان استاد",
-    "computer courses Afghanistan",
-    "computer training Afghanistan",
-    "technology education Afghanistan",
-    "computer institute Khost",
-    "computer courses Khost",
-    "IT courses Afghanistan",
-    "computer education",
-    "technology training",
-  ],
+  const descriptions: Record<string, string> = {
+    en: "AfghanUstad provides practical computer courses, technology education, and digital skills training in Afghanistan. Learn skills for study, work, and the digital world.",
+    fa: "افغان استاد؛ آموزش عملی کمپیوتر، تکنالوژی و مهارت‌های دیجیتال برای رشد تحصیلی و حرفه‌ای در افغانستان.",
+    ps: "افغان استاد په افغانستان کې د کمپیوټر، ټکنالوژۍ او ډیجیټلي مهارتونو عملي زده کړې وړاندې کوي.",
+  };
 
-  authors: [
-    {
-      name: "AfghanUstad",
-      url: "https://afghanustad.com",
+  const description = descriptions[locale] ?? descriptions.en;
+
+  return {
+    metadataBase: new URL(siteUrl),
+
+    title: {
+      default: "AfghanUstad | Computer & Technology Education",
+      template: "%s | AfghanUstad",
     },
-  ],
 
-  creator: "AfghanUstad",
-  publisher: "AfghanUstad",
+    description,
 
-  alternates: {
-    canonical: "/en",
-    languages: {
-      en: "/en",
-      fa: "/fa",
-      ps: "/ps",
-    },
-  },
+    keywords: [
+      "AfghanUstad",
+      "افغان استاد",
+      "computer courses Afghanistan",
+      "computer training Afghanistan",
+      "technology education Afghanistan",
+      "computer institute Khost",
+      "computer courses Khost",
+      "IT courses Afghanistan",
+      "digital skills training",
+    ],
 
-  openGraph: {
-    type: "website",
-    siteName: "AfghanUstad",
-    title: "AfghanUstad | Computer & Technology Education",
-    description:
-      "Learn practical computer and technology skills with AfghanUstad.",
-    url: siteUrl,
-    images: [
+    authors: [
       {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "AfghanUstad - Computer and Technology Education",
+        name: "AfghanUstad",
+        url: siteUrl,
       },
     ],
-    locale: "en_US",
-  },
 
-  twitter: {
-    card: "summary_large_image",
-    title: "AfghanUstad | Computer & Technology Education",
-    description:
-      "Learn practical computer and technology skills with AfghanUstad.",
-    images: ["/og-image.png"],
-  },
+    creator: "AfghanUstad",
+    publisher: "AfghanUstad",
 
-  robots: {
-    index: true,
-    follow: true,
-  },
+    alternates: {
+      canonical: canonicalUrl,
+      languages: {
+        en: `${siteUrl}/en`,
+        fa: `${siteUrl}/fa`,
+        ps: `${siteUrl}/ps`,
+      },
+    },
 
-  icons: {
-    icon: "/favicon.ico",
-  },
+    openGraph: {
+      type: "website",
+      siteName: "AfghanUstad",
+      title: "AfghanUstad | Computer & Technology Education",
+      description,
+      url: canonicalUrl,
+      locale: locale === "fa" ? "fa_AF" : locale === "ps" ? "ps_AF" : "en_US",
+      images: [
+        {
+          url: "/og-image.png",
+          width: 1200,
+          height: 630,
+          alt: "AfghanUstad - Computer and Technology Education",
+        },
+      ],
+    },
+
+    twitter: {
+      card: "summary_large_image",
+      title: "AfghanUstad | Computer & Technology Education",
+      description,
+      images: ["/og-image.png"],
+    },
+
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+        "max-video-preview": -1,
+      },
+    },
+
+    icons: {
+      icon: "/favicon.ico",
+    },
+
+    category: "education",
+  };
+}
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "EducationalOrganization",
+      "@id": `${siteUrl}/#organization`,
+      name: "AfghanUstad",
+      alternateName: "افغان استاد",
+      url: siteUrl,
+      description:
+        "AfghanUstad provides practical computer and technology education and digital skills training in Afghanistan.",
+      knowsLanguage: ["en", "fa", "ps"],
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${siteUrl}/#website`,
+      name: "AfghanUstad",
+      url: siteUrl,
+      publisher: {
+        "@id": `${siteUrl}/#organization`,
+      },
+      inLanguage: ["en", "fa", "ps"],
+    },
+  ],
 };
 
-export default async function LocaleLayout({
-  children,
-  params,
-}: Props) {
+export default async function LocaleLayout({ children, params }: Props) {
   const { locale } = await params;
 
   if (!hasLocale(routing.locales, locale)) {
@@ -132,7 +179,6 @@ export default async function LocaleLayout({
   }
 
   const messages = await getMessages();
-
   const direction = locale === "en" ? "ltr" : "rtl";
 
   return (
@@ -155,11 +201,24 @@ export default async function LocaleLayout({
           <header>
             <Navbar />
           </header>
+
           {children}
+
           <footer>
             <Footer />
           </footer>
         </NextIntlClientProvider>
+
+        {/* Website traffic analytics */}
+        <Analytics />
+
+        {/* Structured data for search engines */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(structuredData).replace(/</g, "\\u003c"),
+          }}
+        />
       </body>
     </html>
   );
