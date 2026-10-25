@@ -14,7 +14,6 @@ import { LuArrowRight, LuSearchX } from "react-icons/lu";
 import { useLocale, useTranslations } from "next-intl";
 
 import CourseFilters from "./CourseFilters";
-
 import FeaturedCourseCard, {
   COVER_TONES,
   CourseCard,
@@ -249,7 +248,11 @@ export default function Courses({
             </div>
           ) : null}
 
-          <div ref={gridRef} className="mt-8 min-w-0" aria-busy={isLoading}>
+          <div
+            ref={gridRef}
+            className="mt-8 min-w-0"
+            aria-busy={isLoading}
+          >
             {isLoading ? (
               <div
                 role="status"
@@ -268,19 +271,28 @@ export default function Courses({
             ) : visible.length === 0 || !lead ? (
               <EmptyState
                 canReset={effectiveId !== ALL_CATEGORY_ID}
-                onReset={() => setActiveId(ALL_CATEGORY_ID)}
+                onReset={() =>
+                  setActiveId(ALL_CATEGORY_ID)
+                }
               />
             ) : (
-              <AnimatePresence mode="wait" initial={false}>
+              <AnimatePresence
+                mode="wait"
+                initial={false}
+              >
                 <motion.div
                   key={effectiveId}
                   variants={stagger}
                   initial="hidden"
-                  animate={gridInView ? "visible" : "hidden"}
+                  animate={
+                    gridInView ? "visible" : "hidden"
+                  }
                   exit={{
                     opacity: 0,
                     transition: {
-                      duration: prefersReducedMotion ? 0 : 0.15,
+                      duration: prefersReducedMotion
+                        ? 0
+                        : 0.15,
                     },
                   }}
                 >
@@ -294,37 +306,60 @@ export default function Courses({
                     >
                       <FeaturedCourseCard
                         course={lead}
-                        category={categoryById.get(lead.categoryId)}
+                        category={categoryById.get(
+                          lead.categoryId,
+                        )}
                       />
                     </div>
 
                     {sideCourses.length > 0 ? (
                       <div className="flex min-w-0 flex-col gap-5 xl:col-span-5">
-                        {sideCourses.map((course, index) => (
-                          <div key={course.id} className="flex-1">
-                            <CourseCard
-                              variant="compact"
-                              course={course}
-                              category={categoryById.get(course.categoryId)}
-                              tone={COVER_TONES[index % COVER_TONES.length]}
-                            />
-                          </div>
-                        ))}
+                        {sideCourses.map(
+                          (course, index) => (
+                            <div
+                              key={course.id}
+                              className="flex-1"
+                            >
+                              <CourseCard
+                                variant="compact"
+                                course={course}
+                                category={categoryById.get(
+                                  course.categoryId,
+                                )}
+                                tone={
+                                  COVER_TONES[
+                                    index %
+                                      COVER_TONES.length
+                                  ]
+                                }
+                              />
+                            </div>
+                          ),
+                        )}
                       </div>
                     ) : null}
                   </div>
 
                   {gridCourses.length > 0 ? (
                     <div className="mt-6 grid min-w-0 grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
-                      {gridCourses.map((course, index) => (
-                        <CourseCard
-                          key={course.id}
-                          variant="standard"
-                          course={course}
-                          category={categoryById.get(course.categoryId)}
-                          tone={COVER_TONES[(index + 2) % COVER_TONES.length]}
-                        />
-                      ))}
+                      {gridCourses.map(
+                        (course, index) => (
+                          <CourseCard
+                            key={course.id}
+                            variant="standard"
+                            course={course}
+                            category={categoryById.get(
+                              course.categoryId,
+                            )}
+                            tone={
+                              COVER_TONES[
+                                (index + 2) %
+                                  COVER_TONES.length
+                              ]
+                            }
+                          />
+                        ),
+                      )}
                     </div>
                   ) : null}
                 </motion.div>
