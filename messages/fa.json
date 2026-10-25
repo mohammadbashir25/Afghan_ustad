@@ -307,7 +307,10 @@
     "copyright": "© {year} {name}. تمامی حقوق محفوظ است.",
     "navigation": "ناوبری پایین صفحه",
     "social": "افغان استاد را دنبال کنید",
-    "groups": { "explore": "کاوش", "academy": "آکادمی" },
+    "groups": {
+      "explore": "کاوش",
+      "academy": "آکادمی"
+    },
     "contact": {
       "title": "تماس",
       "email": "ایمیل",
@@ -315,8 +318,14 @@
       "address": "آدرس",
       "hours": "ساعات کاری"
     },
-    "legal": { "privacy": "سیاست حفظ حریم خصوصی", "terms": "شرایط استفاده" },
-    "developer": { "label": "طراحی و توسعه توسط", "name": "محمد بشیر" }
+    "legal": {
+      "privacy": "سیاست حفظ حریم خصوصی",
+      "terms": "شرایط استفاده"
+    },
+    "developer": {
+      "label": "طراحی و توسعه توسط",
+      "name": "محمد بشیر"
+    }
   },
   "pages": {
     "about": {
@@ -535,7 +544,12 @@
       "computerBasics": "مبانی کامپیوتر",
       "programming": "برنامه‌نویسی",
       "web": "وب",
-      "productivity": "ابزارهای کاری"
+      "productivity": "ابزارهای کاری",
+      "graphicDesign": "طراحی گرافیک",
+      "videoEditing": "تدوین ویدیو",
+      "internet": "اینترنت",
+      "digitalMarketing": "بازاریابی دیجیتال",
+      "database": "پایگاه داده"
     },
     "levels": {
       "beginner": "مبتدی",

@@ -307,7 +307,10 @@
     "copyright": "© {year} {name}. ټول حقوق خوندي دي.",
     "navigation": "د پاڼې ښکته نیویګیشن",
     "social": "افغان استاد تعقیب کړئ",
-    "groups": { "explore": "وپلټئ", "academy": "اکاډمي" },
+    "groups": {
+      "explore": "وپلټئ",
+      "academy": "اکاډمي"
+    },
     "contact": {
       "title": "اړیکه",
       "email": "بریښنالیک",
@@ -315,8 +318,14 @@
       "address": "پته",
       "hours": "د کار ساعتونه"
     },
-    "legal": { "privacy": "د محرمیت تګلاره", "terms": "د کارونې شرطونه" },
-    "developer": { "label": "جوړونکی:", "name": "محمد بشیر" }
+    "legal": {
+      "privacy": "د محرمیت تګلاره",
+      "terms": "د کارونې شرطونه"
+    },
+    "developer": {
+      "label": "جوړونکی:",
+      "name": "محمد بشیر"
+    }
   },
   "pages": {
     "about": {
@@ -529,14 +538,18 @@
       "categoryLabel": "موضوع",
       "all": "ټول",
       "results": "له {total} کورسونو څخه {shown} ښودل کېږي",
-
       "resetFilters": "فلټرونه بیا تنظیم کړئ"
     },
     "categories": {
       "computerBasics": "د کمپیوټر بنسټونه",
       "programming": "پروګرامینګ",
       "web": "ویب",
-      "productivity": "د کار وسایل"
+      "productivity": "د کار وسایل",
+      "graphicDesign": "ګرافیک ډیزاین",
+      "videoEditing": "ویډیو ایډیټنګ",
+      "internet": "انټرنېټ",
+      "digitalMarketing": "ډیجیټل بازارموندنه",
+      "database": "ډیټابېس"
     },
     "levels": {
       "beginner": "پیل کوونکی",

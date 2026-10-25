@@ -17,7 +17,16 @@
  * Active course records are passed from the server page into the presentation components.
  */
 import type { IconType } from "react-icons";
-import { LuGlobe, LuMonitor, LuTerminal } from "react-icons/lu";
+import {
+  LuDatabase,
+  LuGlobe,
+  LuMegaphone,
+  LuMonitor,
+  LuPalette,
+  LuTerminal,
+  LuVideo,
+  LuWifi,
+} from "react-icons/lu";
 
 /* ------------------------------ Placeholders ----------------------------- */
 
@@ -66,17 +75,54 @@ export interface CourseCategory {
 export const COURSE_CATEGORIES: readonly CourseCategory[] = [
   {
     id: "fundamentals",
-    label: { en: "Computer Fundamentals", fa: "مبانی کمپیوتر", ps: "د کمپیوټر بنسټونه" },
+    label: {
+      en: "Computer Fundamentals",
+      fa: "Ù…Ø¨Ø§Ù†ÛŒ Ú©Ù…Ù¾ÛŒÙˆØªØ±",
+      ps: "Ø¯ Ú©Ù…Ù¾ÛŒÙˆÙ¼Ø± Ø¨Ù†Ø³Ù¼ÙˆÙ†Ù‡",
+    },
     icon: LuMonitor,
   },
   {
     id: "programming",
-    label: { en: "Programming", fa: "برنامه‌نویسی", ps: "پروګرامینګ" },
+    label: {
+      en: "Programming",
+      fa: "Ø¨Ø±Ù†Ø§Ù…Ù‡â€ŒÙ†ÙˆÛŒØ³ÛŒ",
+      ps: "Ù¾Ø±ÙˆÚ«Ø±Ø§Ù…ÛŒÙ†Ú«",
+    },
     icon: LuTerminal,
   },
   {
+    id: "graphicDesign",
+    label: { en: "Graphic Design", fa: "طراحی گرافیک", ps: "ګرافیک ډیزاین" },
+    icon: LuPalette,
+  },
+  {
+    id: "videoEditing",
+    label: { en: "Video Editing", fa: "تدوین ویدیو", ps: "ویډیو ایډیټنګ" },
+    icon: LuVideo,
+  },
+  {
+    id: "internet",
+    label: { en: "Internet", fa: "اینترنت", ps: "انټرنېټ" },
+    icon: LuWifi,
+  },
+  {
+    id: "digitalMarketing",
+    label: {
+      en: "Digital Marketing",
+      fa: "بازاریابی دیجیتال",
+      ps: "ډیجیټل بازارموندنه",
+    },
+    icon: LuMegaphone,
+  },
+  {
+    id: "database",
+    label: { en: "Database", fa: "پایگاه داده", ps: "ډیټابېس" },
+    icon: LuDatabase,
+  },
+  {
     id: "web",
-    label: { en: "Web Development", fa: "توسعهٔ وب", ps: "د ویب پراختیا" },
+    label: { en: "Web Development", fa: "توسعه وب", ps: "ویب پراختیا" },
     icon: LuGlobe,
   },
 ] as const;

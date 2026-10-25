@@ -22,11 +22,19 @@ const localized = (value: unknown, legacy = "") => {
   }
   return { en: legacy, fa: legacy, ps: legacy };
 };
-const categoryId = (value: string) => {
-  const v = value.toLowerCase();
-  if (v.includes("web") || v.includes("html")) return "web";
-  if (v.includes("program") || v.includes("code") || v.includes("پروگرام"))
-    return "programming";
+/** Convert CMS category labels into the stable IDs used by homepage filters. */
+const categoryId = (value: string): string => {
+  const v = value.normalize("NFKD").toLowerCase().trim().replace(/[_-]+/g, " ");
+
+  // Match specific topics before generic words such as "design" or "computer".
+  if (/database|sql|دیتابیس|ډیټابیس/.test(v)) return "database";
+  if (/digital\s*market|marketing|مارکیټنګ|بازاریابی/.test(v)) return "digitalMarketing";
+  if (/graphic\s*design|design|ګرافیک|گرافیک/.test(v)) return "graphicDesign";
+  if (/video\s*edit|premiere|پریمیر|ویدیو|ویډیو/.test(v)) return "videoEditing";
+  if (/web\s*development|web|html|css|javascript|ویب/.test(v)) return "web";
+  if (/internet|online|انټرنېټ|اینترنت/.test(v)) return "internet";
+  if (/program|coding|code|programming|پروګرام|برنامه.?نویسی/.test(v)) return "programming";
+  if (/office|computer\s*(fundamental|basic)|fundamental|ms\s*office|کمپیوټر|کمپیوتر/.test(v)) return "fundamentals";
   return "fundamentals";
 };
 

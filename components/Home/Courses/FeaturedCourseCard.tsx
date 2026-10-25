@@ -77,8 +77,8 @@ const TONE_CLASSES: Readonly<Record<CoverTone, string>> = {
  * This is intentionally deterministic on both server and client.
  * It prevents hydration mismatches such as:
  *
- * Server: ۱۶ درسونه
- * Client: 16 درسونه
+ * Server: Û±Û¶ Ø¯Ø±Ø³ÙˆÙ†Ù‡
+ * Client: 16 Ø¯Ø±Ø³ÙˆÙ†Ù‡
  */
 const toLocalizedDigits = (value: number, locale: string): string => {
   if (locale !== "ps" && locale !== "fa") {
@@ -459,7 +459,7 @@ export default function FeaturedCourseCard({
   return (
     <motion.article
       variants={variants}
-      className="group relative isolate flex h-full flex-col overflow-hidden rounded-[2rem] bg-primary-dark text-start text-surface shadow-[0_40px_80px_-40px_rgba(5,59,46,0.7)] focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-4"
+      className="group relative isolate flex h-full min-w-0 flex-col overflow-hidden rounded-[2rem] bg-primary-dark text-start text-surface shadow-[0_40px_80px_-40px_rgba(5,59,46,0.7)] focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-4"
     >
       <div className="relative">
         <CourseCover
@@ -468,7 +468,7 @@ export default function FeaturedCourseCard({
           imageSrc={course.coverImage}
           imageAlt={title}
           icon={category?.icon}
-          className="aspect-[16/9] min-h-56 w-full"
+          className="aspect-[16/9] min-h-48 w-full sm:min-h-56"
         />
 
         {/* Featured chip: the single deliberate yellow touch. */}
@@ -545,10 +545,10 @@ export function CourseCard({
   return (
     <motion.article
       variants={variants}
-      className={`group relative isolate flex overflow-hidden rounded-3xl border border-border bg-surface text-start transition-[border-color,box-shadow] duration-300 hover:border-primary/40 hover:shadow-[0_24px_50px_-28px_rgba(5,59,46,0.5)] focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 ${
+      className={`group relative isolate flex min-w-0 overflow-hidden rounded-3xl border border-border bg-surface text-start transition-[border-color,box-shadow] duration-300 hover:border-primary/40 hover:shadow-[0_24px_50px_-28px_rgba(5,59,46,0.5)] focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 ${
         isCompact
-          ? "h-full flex-row items-stretch"
-          : "flex-col"
+          ? "min-h-40 flex-row items-stretch sm:min-h-44"
+          : "h-full flex-col"
       }`}
     >
       <CourseCover
@@ -559,14 +559,14 @@ export function CourseCard({
         icon={category?.icon}
         className={
           isCompact
-            ? "w-32 shrink-0 sm:w-44"
+            ? "w-28 shrink-0 sm:w-36 xl:w-40"
             : "aspect-[16/10] w-full"
         }
       />
 
       <div
         className={`flex min-w-0 flex-1 flex-col gap-3 ${
-          isCompact ? "p-5" : "p-6"
+          isCompact ? "p-4 sm:p-5" : "p-5 sm:p-6"
         }`}
       >
         {category ? (
@@ -575,7 +575,7 @@ export function CourseCard({
           </p>
         ) : null}
 
-        <h3 className="text-lg font-bold leading-[1.6] text-foreground">
+        <h3 className="break-words text-base font-bold leading-[1.55] text-foreground sm:text-lg sm:leading-[1.6]">
           <Link
             href={getCourseHref(course)}
             className="outline-none after:absolute after:inset-0 after:content-['']"
@@ -591,7 +591,7 @@ export function CourseCard({
           </p>
         ) : null}
 
-        <div className="mt-auto flex items-end justify-between gap-3 pt-2">
+        <div className="mt-auto flex min-w-0 items-end justify-between gap-2 pt-2">
           <CourseMeta
             course={course}
             surface="light"

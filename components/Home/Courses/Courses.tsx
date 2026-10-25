@@ -14,6 +14,7 @@ import { LuArrowRight, LuSearchX } from "react-icons/lu";
 import { useLocale, useTranslations } from "next-intl";
 
 import CourseFilters from "./CourseFilters";
+
 import FeaturedCourseCard, {
   COVER_TONES,
   CourseCard,
@@ -55,14 +56,14 @@ const sectionStyle: CSSProperties = {
   position: "relative",
   isolation: "isolate",
   overflow: "hidden",
-  paddingBlock: "clamp(4.5rem, 9vw, 8rem)",
+  paddingBlock: "clamp(3.5rem, 7vw, 6.5rem)",
 };
 
 const containerStyle: CSSProperties = {
   width: "100%",
   maxWidth: "80rem",
   marginInline: "auto",
-  paddingInline: "clamp(1.5rem, 4vw, 2rem)",
+  paddingInline: "clamp(1rem, 4vw, 2rem)",
 };
 
 export default function Courses({
@@ -228,7 +229,7 @@ export default function Courses({
           </motion.div>
 
           {hasCourses && !isLoading ? (
-            <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="mt-8 flex min-w-0 flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <CourseFilters
                 categories={usedCategories}
                 activeId={effectiveId}
@@ -248,22 +249,18 @@ export default function Courses({
             </div>
           ) : null}
 
-          <div
-            ref={gridRef}
-            className="mt-8"
-            aria-busy={isLoading}
-          >
+          <div ref={gridRef} className="mt-8 min-w-0" aria-busy={isLoading}>
             {isLoading ? (
               <div
                 role="status"
                 aria-label={t("loading")}
-                className="grid gap-6 lg:grid-cols-12"
+                className="grid min-w-0 gap-6 xl:grid-cols-12"
               >
-                <div className="lg:col-span-7">
+                <div className="min-w-0 xl:col-span-7">
                   <CourseCardSkeleton variant="featured" />
                 </div>
 
-                <div className="flex flex-col gap-6 lg:col-span-5">
+                <div className="flex min-w-0 flex-col gap-5 xl:col-span-5">
                   <CourseCardSkeleton variant="compact" />
                   <CourseCardSkeleton variant="compact" />
                 </div>
@@ -271,95 +268,63 @@ export default function Courses({
             ) : visible.length === 0 || !lead ? (
               <EmptyState
                 canReset={effectiveId !== ALL_CATEGORY_ID}
-                onReset={() =>
-                  setActiveId(ALL_CATEGORY_ID)
-                }
+                onReset={() => setActiveId(ALL_CATEGORY_ID)}
               />
             ) : (
-              <AnimatePresence
-                mode="wait"
-                initial={false}
-              >
+              <AnimatePresence mode="wait" initial={false}>
                 <motion.div
                   key={effectiveId}
                   variants={stagger}
                   initial="hidden"
-                  animate={
-                    gridInView ? "visible" : "hidden"
-                  }
+                  animate={gridInView ? "visible" : "hidden"}
                   exit={{
                     opacity: 0,
                     transition: {
-                      duration: prefersReducedMotion
-                        ? 0
-                        : 0.15,
+                      duration: prefersReducedMotion ? 0 : 0.15,
                     },
                   }}
                 >
-                  <div className="grid gap-6 lg:grid-cols-12">
+                  <div className="grid min-w-0 gap-6 xl:grid-cols-12">
                     <div
                       className={
                         sideCourses.length > 0
-                          ? "lg:col-span-7"
-                          : "lg:col-span-12"
+                          ? "min-w-0 xl:col-span-7"
+                          : "min-w-0 xl:col-span-12"
                       }
                     >
                       <FeaturedCourseCard
                         course={lead}
-                        category={categoryById.get(
-                          lead.categoryId,
-                        )}
+                        category={categoryById.get(lead.categoryId)}
                       />
                     </div>
 
                     {sideCourses.length > 0 ? (
-                      <div className="flex flex-col gap-6 lg:col-span-5">
-                        {sideCourses.map(
-                          (course, index) => (
-                            <div
-                              key={course.id}
-                              className="flex-1"
-                            >
-                              <CourseCard
-                                variant="compact"
-                                course={course}
-                                category={categoryById.get(
-                                  course.categoryId,
-                                )}
-                                tone={
-                                  COVER_TONES[
-                                    index %
-                                      COVER_TONES.length
-                                  ]
-                                }
-                              />
-                            </div>
-                          ),
-                        )}
+                      <div className="flex min-w-0 flex-col gap-5 xl:col-span-5">
+                        {sideCourses.map((course, index) => (
+                          <div key={course.id} className="flex-1">
+                            <CourseCard
+                              variant="compact"
+                              course={course}
+                              category={categoryById.get(course.categoryId)}
+                              tone={COVER_TONES[index % COVER_TONES.length]}
+                            />
+                          </div>
+                        ))}
                       </div>
                     ) : null}
                   </div>
 
                   {gridCourses.length > 0 ? (
-                    <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                      {gridCourses.map(
-                        (course, index) => (
-                          <CourseCard
-                            key={course.id}
-                            variant="standard"
-                            course={course}
-                            category={categoryById.get(
-                              course.categoryId,
-                            )}
-                            tone={
-                              COVER_TONES[
-                                (index + 2) %
-                                  COVER_TONES.length
-                              ]
-                            }
-                          />
-                        ),
-                      )}
+                    <div className="mt-6 grid min-w-0 grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                      {gridCourses.map((course, index) => (
+                        <CourseCard
+                          key={course.id}
+                          variant="standard"
+                          course={course}
+                          category={categoryById.get(course.categoryId)}
+                          tone={COVER_TONES[(index + 2) % COVER_TONES.length]}
+                        />
+                      ))}
                     </div>
                   ) : null}
                 </motion.div>

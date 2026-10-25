@@ -1,5 +1,5 @@
 /**
- * Courses page — domain types
+ * Courses page â€” domain types
  * ---------------------------------------------------------------------------
  * `Course` mirrors what a CMS / database row would return, so swapping the
  * placeholder data for a real source later never touches the UI.
@@ -13,7 +13,16 @@ export type Locale = "en" | "fa" | "ps";
 export type LocalizedText = Record<Locale, string>;
 
 export type CourseLevel = "beginner" | "intermediate" | "advanced";
-export type CourseCategory = "computerBasics" | "programming" | "web" | "productivity";
+export type CourseCategory =
+  | "computerBasics"
+  | "programming"
+  | "web"
+  | "productivity"
+  | "graphicDesign"
+  | "videoEditing"
+  | "internet"
+  | "digitalMarketing"
+  | "database";
 export type CourseStatus = "open" | "comingSoon";
 
 /** Filter value: a concrete option, or "all" for no filtering. */

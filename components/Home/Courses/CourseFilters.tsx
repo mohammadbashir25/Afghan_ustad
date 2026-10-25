@@ -64,7 +64,7 @@ export default function CourseFilters({
       role="group"
       aria-label={t("filters.label")}
       // Negative margins let the row bleed to the viewport edge on mobile.
-      className="-mx-6 flex gap-2.5 overflow-x-auto px-6 py-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden"
+      className="w-full min-w-0 flex gap-2.5 overflow-x-auto px-1 py-2 [scrollbar-width:none] sm:flex-wrap sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden"
     >
       {options.map((option) => {
         const isActive = option.id === activeId;
@@ -74,7 +74,7 @@ export default function CourseFilters({
             type="button"
             aria-pressed={isActive}
             onClick={() => onChange(option.id)}
-            className={`relative shrink-0 rounded-full border px-5 py-2.5 text-sm font-semibold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+            className={`relative shrink-0 rounded-full border px-4 py-2.5 text-sm font-semibold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:px-5 ${
               isActive
                 ? "border-primary text-surface"
                 : "border-border bg-surface text-foreground hover:border-primary/50 hover:text-primary"

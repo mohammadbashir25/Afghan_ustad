@@ -118,8 +118,8 @@
         "badge": "Learn by doing",
         "samples": {
           "en": "Learn to code",
-          "fa": "کدنویسی را یاد بگیرید",
-          "ps": "کوډ لیکل زده کړئ"
+          "fa": "Ú©Ø¯Ù†ÙˆÛŒØ³ÛŒ Ø±Ø§ ÛŒØ§Ø¯ Ø¨Ú¯ÛŒØ±ÛŒØ¯",
+          "ps": "Ú©ÙˆÚ‰ Ù„ÛŒÚ©Ù„ Ø²Ø¯Ù‡ Ú©Ú“Ø¦"
         },
         "imagePlaceholder": "Photo of the AfghanUstad learning space goes here"
       },
@@ -215,7 +215,7 @@
           }
         },
         "submit": "Verify",
-        "submitting": "Checking…",
+        "submitting": "Checkingâ€¦",
         "errors": {
           "required": "Please enter a value to search.",
           "tooShort": "Enter at least {min} characters."
@@ -226,14 +226,14 @@
         }
       },
       "result": {
-        "checking": "Checking the record…",
+        "checking": "Checking the recordâ€¦",
         "verified": {
           "title": "Record verified",
           "description": "This student matches a record held by AfghanUstad."
         },
         "notFound": {
           "title": "No matching record",
-          "description": "We couldn't find a record matching “{query}”."
+          "description": "We couldn't find a record matching â€œ{query}â€."
         },
         "error": {
           "title": "Something went wrong",
@@ -304,10 +304,13 @@
   "Footer": {
     "brandName": "AfghanUstad Educational Center",
     "tagline": "Practical computer and technology education, one step at a time.",
-    "copyright": "© {year} {name}. All rights reserved.",
+    "copyright": "Â© {year} {name}. All rights reserved.",
     "navigation": "Footer navigation",
     "social": "Follow AfghanUstad",
-    "groups": { "explore": "Explore", "academy": "Academy" },
+    "groups": {
+      "explore": "Explore",
+      "academy": "Academy"
+    },
     "contact": {
       "title": "Contact",
       "email": "Email",
@@ -315,8 +318,14 @@
       "address": "Address",
       "hours": "Business hours"
     },
-    "legal": { "privacy": "Privacy Policy", "terms": "Terms of Use" },
-    "developer": { "label": "Developed by", "name": "Mohammad Bashir" }
+    "legal": {
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Use"
+    },
+    "developer": {
+      "label": "Developed by",
+      "name": "Mohammad Bashir"
+    }
   },
   "pages": {
     "about": {
@@ -535,7 +544,12 @@
       "computerBasics": "Computer basics",
       "programming": "Programming",
       "web": "Web",
-      "productivity": "Productivity"
+      "productivity": "Productivity",
+      "graphicDesign": "Graphic Design",
+      "videoEditing": "Video Editing",
+      "internet": "Internet",
+      "digitalMarketing": "Digital Marketing",
+      "database": "Database"
     },
     "levels": {
       "beginner": "Beginner",
@@ -895,7 +909,7 @@
       },
       "counter": "{count} / {max}",
       "submit": "Send message",
-      "submitting": "Sending…",
+      "submitting": "Sendingâ€¦",
       "errors": {
         "required": "This field is required.",
         "nameShort": "Please enter your full name.",
