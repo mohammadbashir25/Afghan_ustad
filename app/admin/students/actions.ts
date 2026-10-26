@@ -41,88 +41,226 @@ export async function registerStudentAction(
     return { status: "error", message: "You are not allowed to register students." };
   }
   const parsed = studentRegistrationSchema.safeParse({
-    name: textField(fd, "name"), fatherName: textField(fd, "fatherName"), whatsappNumber: textField(fd, "whatsappNumber"),
-    username: textField(fd, "username").toLowerCase(), pin: textField(fd, "pin"), courseId: textField(fd, "courseId"), classId: textField(fd, "classId") || undefined,
-    amountPaid: textField(fd, "amountPaid"), discountAmount: textField(fd, "discountAmount") || "0",
+    registrationDate: textField(fd, "registrationDate"),
+    name: textField(fd, "name"),
+    fatherName: textField(fd, "fatherName"),
+    whatsappNumber: textField(fd, "whatsappNumber"),
+    username: textField(fd, "username").toLowerCase(),
+    pin: textField(fd, "pin"),
+    courseId: textField(fd, "courseId"),
+    classId: textField(fd, "classId") || undefined,
+    amountPaid: textField(fd, "amountPaid"),
+    discountAmount: textField(fd, "discountAmount") || "0",
     method: textField(fd, "method"),
   });
-  if (!parsed.success) return { status: "error", message: parsed.error.issues[0]?.message ?? "Check the form." };
+  if (!parsed.success)
+    return {
+      status: "error",
+      message: parsed.error.issues[0]?.message ?? "Check the form.",
+    };
   const input = parsed.data;
 
   try {
     await connectDB();
-    const course = await Course.findOne({ _id: input.courseId, status: "ACTIVE" }).select("title fee").lean();
-    if (!course) return { status: "error", message: "Select an active course from the course catalogue." };
-    if (input.discountAmount > course.fee) return { status: "error", message: "Discount cannot exceed the selected course fee." };
+    const course = await Course.findOne({
+      _id: input.courseId,
+      status: "ACTIVE",
+    })
+      .select("title fee")
+      .lean();
+    if (!course)
+      return {
+        status: "error",
+        message: "Select an active course from the course catalogue.",
+      };
+    if (input.discountAmount > course.fee)
+      return {
+        status: "error",
+        message: "Discount cannot exceed the selected course fee.",
+      };
     const adjustedFee = course.fee - input.discountAmount;
-    if (input.amountPaid > adjustedFee) return { status: "error", message: "Initial payment cannot exceed the fee after discount." };
-    const selectedClass = input.classId ? await ClassRecord.findOne({ _id: input.classId, course: course._id, status: { $ne: "COMPLETED" } }).select("_id").lean() : null;
-    if (input.classId && !selectedClass) return { status: "error", message: "Select a class that belongs to the chosen course." };
-    if (await User.findOne({ name: input.name, fatherName: input.fatherName, whatsappNumber: input.whatsappNumber, role: "STUDENT" }).select("_id").lean())
-      return { status: "error", message: "This student already has an account. Use Enroll Existing Student to add another course or class." };
+    if (input.amountPaid > adjustedFee)
+      return {
+        status: "error",
+        message: "Initial payment cannot exceed the fee after discount.",
+      };
+    const selectedClass = input.classId
+      ? await ClassRecord.findOne({
+          _id: input.classId,
+          course: course._id,
+          status: { $ne: "COMPLETED" },
+        })
+          .select("_id")
+          .lean()
+      : null;
+    if (input.classId && !selectedClass)
+      return {
+        status: "error",
+        message: "Select a class that belongs to the chosen course.",
+      };
+    if (
+      await User.findOne({
+        name: input.name,
+        fatherName: input.fatherName,
+        whatsappNumber: input.whatsappNumber,
+        role: "STUDENT",
+      })
+        .select("_id")
+        .lean()
+    )
+      return {
+        status: "error",
+        message:
+          "This student already has an account. Use Enroll Existing Student to add another course or class.",
+      };
     if (await User.findOne({ username: input.username }).select("_id").lean())
       return { status: "error", message: "This username is already taken." };
 
     let studentId = "";
     for (let i = 0; i < 5; i++) {
       const candidate = makeStudentId();
-      if (!(await User.findOne({ studentId: candidate }).select("_id").lean())) {
-        studentId = candidate; break;
+      if (
+        !(await User.findOne({ studentId: candidate }).select("_id").lean())
+      ) {
+        studentId = candidate;
+        break;
       }
     }
-    if (!studentId) return { status: "error", message: "Could not generate an ID. Please retry." };
+    if (!studentId)
+      return {
+        status: "error",
+        message: "Could not generate an ID. Please retry.",
+      };
 
     let photoUrl = "";
     const rawPhoto = fd.get("photo");
     if (rawPhoto instanceof File && rawPhoto.size > 0) {
-      if (rawPhoto.size > 5 * 1024 * 1024 || !["image/jpeg", "image/png", "image/webp"].includes(rawPhoto.type)) {
-        return { status: "error", message: "Photo must be JPG, PNG, or WebP and no larger than 5 MB." };
+      if (
+        rawPhoto.size > 5 * 1024 * 1024 ||
+        !["image/jpeg", "image/png", "image/webp"].includes(rawPhoto.type)
+      ) {
+        return {
+          status: "error",
+          message: "Photo must be JPG, PNG, or WebP and no larger than 5 MB.",
+        };
       }
       try {
-        const blob = await put(`student-photos/${studentId}-${Date.now()}`, rawPhoto, { access: "public", addRandomSuffix: true, contentType: rawPhoto.type });
+        const blob = await put(
+          `student-photos/${studentId}-${Date.now()}`,
+          rawPhoto,
+          {
+            access: "public",
+            addRandomSuffix: true,
+            contentType: rawPhoto.type,
+          },
+        );
         photoUrl = blob.url;
       } catch (error) {
         console.error("Student photo upload failed", error);
-        return { status: "error", message: "Photo upload failed. Check BLOB_READ_WRITE_TOKEN or register without a photo." };
+        return {
+          status: "error",
+          message:
+            "Photo upload failed. Check BLOB_READ_WRITE_TOKEN or register without a photo.",
+        };
       }
     }
     const balance = Math.max(0, adjustedFee - input.amountPaid);
     const fullyPaid = balance === 0;
     const student = await User.create({
-      name: input.name, fatherName: input.fatherName, whatsappNumber: input.whatsappNumber, photoUrl, username: input.username, studentId,
+      registrationDate: new Date(`${input.registrationDate}T12:00:00.000Z`),
+      name: input.name,
+      fatherName: input.fatherName,
+      whatsappNumber: input.whatsappNumber,
+      photoUrl,
+      username: input.username,
+      studentId,
       pinHash: await bcrypt.hash(input.pin, 12),
-      course: course._id, class: selectedClass?._id ?? null, courseName: course.title, courseFee: adjustedFee, discountAmount: input.discountAmount,
-      role: "STUDENT", isActive: fullyPaid,
+      course: course._id,
+      class: selectedClass?._id ?? null,
+      courseName: course.title,
+      courseFee: adjustedFee,
+      discountAmount: input.discountAmount,
+      role: "STUDENT",
+      isActive: fullyPaid,
     });
-    const enrollment = await Enrollment.create({ student: student._id, course: course._id, class: selectedClass?._id ?? null, courseName: course.title, courseFee: adjustedFee, discountAmount: input.discountAmount, status: fullyPaid ? "ACTIVE" : "PENDING_PAYMENT" });
+    const enrollment = await Enrollment.create({
+      student: student._id,
+      course: course._id,
+      class: selectedClass?._id ?? null,
+      courseName: course.title,
+      courseFee: adjustedFee,
+      discountAmount: input.discountAmount,
+      status: fullyPaid ? "ACTIVE" : "PENDING_PAYMENT",
+    });
     const paidAt = new Date();
     let receiptNumber: string | null = null;
     if (input.amountPaid > 0) {
       receiptNumber = makeReceiptNumber();
       await Payment.create({
-        receiptNumber, student: student._id, enrollment: enrollment._id, studentName: input.name, studentId, courseName: course.title,
-        courseFee: adjustedFee, discountAmount: input.discountAmount, class: selectedClass?._id ?? null, amountPaid: input.amountPaid,
-        balanceAfterPayment: balance, method: input.method, paidAt,
+        receiptNumber,
+        student: student._id,
+        enrollment: enrollment._id,
+        studentName: input.name,
+        studentId,
+        courseName: course.title,
+        courseFee: adjustedFee,
+        discountAmount: input.discountAmount,
+        class: selectedClass?._id ?? null,
+        amountPaid: input.amountPaid,
+        balanceAfterPayment: balance,
+        method: input.method,
+        paidAt,
         receivedBy: session.user.id,
       });
     }
     const AuditLog = (await import("@/models/AuditLog")).default;
-    await AuditLog.create({ actor: session.user.id, actorName: session.user.name || session.user.email || "Staff", action: "STUDENT_REGISTERED", targetType: "Student", targetId: String(student._id), details: `Registered ${input.name} (${studentId}) for ${course.title}; fee ${adjustedFee} AFN after ${input.discountAmount} AFN discount; initial payment ${input.amountPaid} AFN.` });
+    await AuditLog.create({
+      actor: session.user.id,
+      actorName: session.user.name || session.user.email || "Staff",
+      action: "STUDENT_REGISTERED",
+      targetType: "Student",
+      targetId: String(student._id),
+      details: `Registered ${input.name} (${studentId}) for ${course.title}; fee ${adjustedFee} AFN after ${input.discountAmount} AFN discount; initial payment ${input.amountPaid} AFN.`,
+    });
     revalidatePath("/admin/students");
     revalidatePath("/manager/students");
     revalidatePath("/manager/student-history");
     revalidatePath("/admin/users");
-    return { status: "success", message: fullyPaid ? "Student registered and activated after full payment." : "Student registered, but access remains locked until the course fee is fully paid.", receipt: {
-      studentName: input.name, studentId, username: input.username, initialPin: input.pin,
-      courseName: course.title, courseFee: adjustedFee,
-      amountPaid: input.amountPaid, balance, receiptNumber,
-      method: input.method, paidAt: paidAt.toISOString(),
-    }};
+    return {
+      status: "success",
+      message: fullyPaid
+        ? "Student registered and activated after full payment."
+        : "Student registered, but access remains locked until the course fee is fully paid.",
+      receipt: {
+        studentName: input.name,
+        studentId,
+        username: input.username,
+        initialPin: input.pin,
+        courseName: course.title,
+        courseFee: adjustedFee,
+        amountPaid: input.amountPaid,
+        balance,
+        receiptNumber,
+        method: input.method,
+        paidAt: paidAt.toISOString(),
+      },
+    };
   } catch (error) {
-    if (typeof error === "object" && error !== null && "code" in error && error.code === 11000)
-      return { status: "error", message: "A unique field collided. Please retry." };
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      error.code === 11000
+    )
+      return {
+        status: "error",
+        message: "A unique field collided. Please retry.",
+      };
     console.error("registerStudentAction failed", error);
-    return { status: "error", message: "Registration failed. Check server logs before retrying." };
+    return {
+      status: "error",
+      message: "Registration failed. Check server logs before retrying.",
+    };
   }
 }
 

@@ -9,48 +9,117 @@ import Expense from "@/models/Expense";
 import ResourcePage from "@/components/dashboard/ResourcePage";
 import MonthlyFinanceChart from "@/components/dashboard/charts/MonthlyFinanceChart";
 import { getMonthlyFinanceSeries } from "@/lib/finance/monthly";
+import Course from "@/models/Course";
+
 export const metadata = { title: "Finance | AfghanUstad" };
+
+function getDateRange(start?: string, end?: string) {
+  const validDate = (value?: string) => {
+    if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return "";
+    const date = new Date(`${value}T00:00:00.000Z`);
+    return !Number.isNaN(date.getTime()) &&
+      date.toISOString().slice(0, 10) === value
+      ? value
+      : "";
+  };
+
+  const startDate = validDate(start);
+  const endDate = validDate(end);
+  if (startDate && endDate && startDate > endDate) {
+    return { startDate: "", endDate: "" };
+  }
+  return { startDate, endDate };
+}
+
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ classId?: string }>;
+  searchParams: Promise<{
+    classId?: string;
+    startDate?: string;
+    endDate?: string;
+  }>;
 }) {
   await requireRole(["MANAGER"]);
   await connectDB();
+  void Course;
+
   const params = await searchParams;
   const classId =
     params.classId && /^[a-f\d]{24}$/i.test(params.classId)
       ? params.classId
       : "";
-  const [classes, payments, students, enrollments, expenses, monthlyFinance] =
-    await Promise.all([
-      ClassRecord.find()
-        .populate("course", "title")
-        .sort({ name: 1 })
-        .select("name course")
-        .lean(),
-      Payment.find(classId ? { class: classId } : {})
-        .populate("student", "name studentId")
-        .sort({ paidAt: -1 })
-        .limit(500)
-        .lean(),
-      User.find({ role: "STUDENT" })
-        .select(
-          "_id name studentId courseFee discountAmount isActive course class courseName",
-        )
-        .lean(),
-      Enrollment.find({
-        status: { $ne: "CANCELLED" },
-        ...(classId ? { class: classId } : {}),
-      })
-        .populate("student", "name studentId")
-        .select("student courseFee discountAmount status class courseName")
-        .lean(),
-      Expense.find({ status: { $in: ["RECORDED", "APPROVED"] } })
-        .select("amount status")
-        .lean(),
-      getMonthlyFinanceSeries(),
-    ]);
+  const { startDate, endDate } = getDateRange(params.startDate, params.endDate);
+  const dateFilter: { $gte?: Date; $lt?: Date } = {};
+
+  if (startDate) dateFilter.$gte = new Date(`${startDate}T00:00:00.000Z`);
+  if (endDate) {
+    const endExclusive = new Date(`${endDate}T00:00:00.000Z`);
+    endExclusive.setUTCDate(endExclusive.getUTCDate() + 1);
+    dateFilter.$lt = endExclusive;
+  }
+
+  const hasDateFilter = Boolean(startDate || endDate);
+
+  const [
+    classes,
+    payments,
+    paymentHistory,
+    students,
+    enrollments,
+    expenses,
+    monthlyFinance,
+    registrationCount,
+    enrollmentCount,
+  ] = await Promise.all([
+    ClassRecord.find()
+      .populate("course", "title")
+      .sort({ name: 1 })
+      .select("name course")
+      .lean(),
+    Payment.find({
+      ...(classId ? { class: classId } : {}),
+      ...(hasDateFilter ? { paidAt: dateFilter } : {}),
+    })
+      .populate("student", "name studentId")
+      .sort({ paidAt: -1 })
+      .limit(500)
+      .lean(),
+    // Keep the complete payment history for accurate outstanding balances.
+    Payment.find(classId ? { class: classId } : {})
+      .select("enrollment student amountPaid")
+      .lean(),
+    User.find({ role: "STUDENT" })
+      .select(
+        "_id name studentId courseFee discountAmount isActive course class courseName",
+      )
+      .lean(),
+    // Keep all non-cancelled enrollments for cumulative fees and balances.
+    Enrollment.find({
+      status: { $ne: "CANCELLED" },
+      ...(classId ? { class: classId } : {}),
+    })
+      .populate("student", "name studentId")
+      .select("student courseFee discountAmount status class courseName")
+      .lean(),
+    Expense.find({
+      status: { $in: ["RECORDED", "APPROVED"] },
+      ...(hasDateFilter ? { date: dateFilter } : {}),
+    })
+      .select("amount status date")
+      .lean(),
+    getMonthlyFinanceSeries(classId || undefined),
+    User.countDocuments({
+      role: "STUDENT",
+      ...(hasDateFilter ? { registrationDate: dateFilter } : {}),
+    }),
+    Enrollment.countDocuments({
+      status: { $ne: "CANCELLED" },
+      ...(classId ? { class: classId } : {}),
+      ...(hasDateFilter ? { enrolledAt: dateFilter } : {}),
+    }),
+  ]);
+
   const enrollmentStudentIds = new Set(
     enrollments.map((e) =>
       String(
@@ -77,18 +146,23 @@ export default async function Page({
       .filter((u) => !enrollmentStudentIds.has(String(u._id)))
       .reduce((sum, u) => sum + (u.discountAmount || 0), 0);
   const expenseTotal = expenses.reduce((sum, e) => sum + e.amount, 0);
+
   const paidByEnrollment = new Map<string, number>();
-  for (const payment of payments)
-    if (payment.enrollment)
+  for (const payment of paymentHistory) {
+    if (payment.enrollment) {
       paidByEnrollment.set(
         String(payment.enrollment),
         (paidByEnrollment.get(String(payment.enrollment)) || 0) +
           payment.amountPaid,
       );
+    }
+  }
+
   const outstandingEnrollments = enrollments.filter(
     (e) => e.courseFee - (paidByEnrollment.get(String(e._id)) || 0) > 0,
   );
   const selectedClass = classes.find((c) => String(c._id) === classId);
+
   return (
     <div className="space-y-5">
       <header>
@@ -99,6 +173,7 @@ export default async function Page({
           student&apos;s next course does not overwrite previous course records.
         </p>
       </header>
+
       <form
         action="/manager/finance"
         className="flex flex-wrap items-end gap-3 rounded-xl border border-[#DCE7E2] bg-white p-4"
@@ -120,6 +195,26 @@ export default async function Page({
             ))}
           </select>
         </label>
+        <label className="min-w-40 flex-1 text-sm font-medium">
+          Start date
+          <input
+            type="date"
+            name="startDate"
+            defaultValue={startDate}
+            max={endDate || undefined}
+            className="mt-1 w-full rounded-lg border border-[#DCE7E2] px-3 py-2 text-sm"
+          />
+        </label>
+        <label className="min-w-40 flex-1 text-sm font-medium">
+          End date
+          <input
+            type="date"
+            name="endDate"
+            defaultValue={endDate}
+            min={startDate || undefined}
+            className="mt-1 w-full rounded-lg border border-[#DCE7E2] px-3 py-2 text-sm"
+          />
+        </label>
         <button className="rounded-lg bg-[#0B6B4F] px-4 py-2 text-sm font-semibold text-white">
           Apply filter
         </button>
@@ -136,7 +231,9 @@ export default async function Page({
           Enroll existing student
         </Link>
       </form>
+
       <MonthlyFinanceChart data={monthlyFinance} />
+
       <ResourcePage
         eyebrow="Operations"
         title={
@@ -144,10 +241,18 @@ export default async function Page({
             ? `Finance · ${selectedClass?.name || "Selected class"}`
             : "Finance overview"
         }
-        description="Amounts are in AFN. Outstanding figures are calculated from each enrollment's payment history."
+        description={`Amounts are in AFN. Outstanding figures are calculated from each enrollment's full payment history.${hasDateFilter ? ` Period: ${startDate || "earliest"} to ${endDate || "latest"}.` : ""}`}
         stats={[
           { label: "Payment records", value: payments.length },
           { label: "Collected", value: `${paid.toLocaleString()} AFN` },
+          {
+            label: "Students registered in period",
+            value: registrationCount.toLocaleString(),
+          },
+          {
+            label: "Enrollments in period",
+            value: enrollmentCount.toLocaleString(),
+          },
           {
             label: "Enrolled fees",
             value: `${enrollmentFees.toLocaleString()} AFN`,
@@ -171,8 +276,9 @@ export default async function Page({
           status: p.method,
           meta: new Date(p.paidAt).toLocaleDateString("en-GB"),
         }))}
-        empty="No payment records match this class filter."
+        empty="No payment records match this filter."
       />
+
       <section className="rounded-xl border border-[#DCE7E2] bg-white p-5">
         <h2 className="font-semibold text-[#053B2E]">
           Outstanding enrollment balances

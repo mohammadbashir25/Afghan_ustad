@@ -39,10 +39,7 @@ const toLocalizedDigits = (value: number, locale: string) => {
 
   const digits = "۰۱۲۳۴۵۶۷۸۹";
 
-  return String(value).replace(
-    /\d/g,
-    (digit) => digits[Number(digit)],
-  );
+  return String(value).replace(/\d/g, (digit) => digits[Number(digit)]);
 };
 
 interface CoursesProps {
@@ -82,10 +79,7 @@ export default function Courses({
     amount: 0.1,
   });
 
-  const sorted = useMemo(
-    () => sortForDisplay(courses),
-    [courses],
-  );
+  const sorted = useMemo(() => sortForDisplay(courses), [courses]);
 
   const counts = useMemo(() => {
     const result: Record<string, number> = {
@@ -93,18 +87,14 @@ export default function Courses({
     };
 
     for (const course of sorted) {
-      result[course.categoryId] =
-        (result[course.categoryId] ?? 0) + 1;
+      result[course.categoryId] = (result[course.categoryId] ?? 0) + 1;
     }
 
     return result;
   }, [sorted]);
 
   const usedCategories = useMemo(
-    () =>
-      categories.filter(
-        (category) => (counts[category.id] ?? 0) > 0,
-      ),
+    () => categories.filter((category) => (counts[category.id] ?? 0) > 0),
     [categories, counts],
   );
 
@@ -115,13 +105,7 @@ export default function Courses({
     : ALL_CATEGORY_ID;
 
   const categoryById = useMemo(
-    () =>
-      new Map(
-        categories.map((category) => [
-          category.id,
-          category,
-        ]),
-      ),
+    () => new Map(categories.map((category) => [category.id, category])),
     [categories],
   );
 
@@ -141,10 +125,7 @@ export default function Courses({
   const sideCourses = rest.slice(0, 2);
   const gridCourses = rest.slice(2);
 
-  const resultCount = toLocalizedDigits(
-    visible.length,
-    locale,
-  );
+  const resultCount = toLocalizedDigits(visible.length, locale);
 
   const stagger: Variants = {
     hidden: {},
@@ -248,11 +229,7 @@ export default function Courses({
             </div>
           ) : null}
 
-          <div
-            ref={gridRef}
-            className="mt-8 min-w-0"
-            aria-busy={isLoading}
-          >
+          <div ref={gridRef} className="mt-8 min-w-0" aria-busy={isLoading}>
             {isLoading ? (
               <div
                 role="status"
@@ -271,28 +248,19 @@ export default function Courses({
             ) : visible.length === 0 || !lead ? (
               <EmptyState
                 canReset={effectiveId !== ALL_CATEGORY_ID}
-                onReset={() =>
-                  setActiveId(ALL_CATEGORY_ID)
-                }
+                onReset={() => setActiveId(ALL_CATEGORY_ID)}
               />
             ) : (
-              <AnimatePresence
-                mode="wait"
-                initial={false}
-              >
+              <AnimatePresence mode="wait" initial={false}>
                 <motion.div
                   key={effectiveId}
                   variants={stagger}
                   initial="hidden"
-                  animate={
-                    gridInView ? "visible" : "hidden"
-                  }
+                  animate={gridInView ? "visible" : "hidden"}
                   exit={{
                     opacity: 0,
                     transition: {
-                      duration: prefersReducedMotion
-                        ? 0
-                        : 0.15,
+                      duration: prefersReducedMotion ? 0 : 0.15,
                     },
                   }}
                 >
@@ -306,60 +274,36 @@ export default function Courses({
                     >
                       <FeaturedCourseCard
                         course={lead}
-                        category={categoryById.get(
-                          lead.categoryId,
-                        )}
+                        category={categoryById.get(lead.categoryId)}
                       />
                     </div>
 
                     {sideCourses.length > 0 ? (
-                      <div className="flex min-w-0 flex-col gap-5 xl:col-span-5">
-                        {sideCourses.map(
-                          (course, index) => (
-                            <div
-                              key={course.id}
-                              className="flex-1"
-                            >
-                              <CourseCard
-                                variant="compact"
-                                course={course}
-                                category={categoryById.get(
-                                  course.categoryId,
-                                )}
-                                tone={
-                                  COVER_TONES[
-                                    index %
-                                      COVER_TONES.length
-                                  ]
-                                }
-                              />
-                            </div>
-                          ),
-                        )}
+                      <div className="grid grid-cols-1 gap-6 lg:col-span-5">
+                        {sideCourses.map((course, index) => (
+                          <CourseCard
+                            key={course.id}
+                            variant="standard"
+                            course={course}
+                            category={categoryById.get(course.categoryId)}
+                            tone={COVER_TONES[index % COVER_TONES.length]}
+                          />
+                        ))}
                       </div>
                     ) : null}
                   </div>
 
                   {gridCourses.length > 0 ? (
                     <div className="mt-6 grid min-w-0 grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
-                      {gridCourses.map(
-                        (course, index) => (
-                          <CourseCard
-                            key={course.id}
-                            variant="standard"
-                            course={course}
-                            category={categoryById.get(
-                              course.categoryId,
-                            )}
-                            tone={
-                              COVER_TONES[
-                                (index + 2) %
-                                  COVER_TONES.length
-                              ]
-                            }
-                          />
-                        ),
-                      )}
+                      {gridCourses.map((course, index) => (
+                        <CourseCard
+                          key={course.id}
+                          variant="standard"
+                          course={course}
+                          category={categoryById.get(course.categoryId)}
+                          tone={COVER_TONES[(index + 2) % COVER_TONES.length]}
+                        />
+                      ))}
                     </div>
                   ) : null}
                 </motion.div>
@@ -379,10 +323,7 @@ interface EmptyStateProps {
   readonly onReset: () => void;
 }
 
-function EmptyState({
-  canReset,
-  onReset,
-}: EmptyStateProps): React.JSX.Element {
+function EmptyState({ canReset, onReset }: EmptyStateProps): React.JSX.Element {
   const t = useTranslations("landing.courses");
 
   return (
@@ -394,9 +335,7 @@ function EmptyState({
         <LuSearchX className="size-6" />
       </span>
 
-      <h3 className="text-xl font-bold text-foreground">
-        {t("empty.title")}
-      </h3>
+      <h3 className="text-xl font-bold text-foreground">{t("empty.title")}</h3>
 
       <p className="max-w-md text-base leading-[1.9] text-text-secondary">
         {t("empty.description")}
@@ -440,18 +379,12 @@ function CatalogBand(): React.JSX.Element {
           </pattern>
         </defs>
 
-        <rect
-          width="100%"
-          height="100%"
-          fill="url(#courses-band-lattice)"
-        />
+        <rect width="100%" height="100%" fill="url(#courses-band-lattice)" />
       </svg>
 
       <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
         <div className="max-w-xl">
-          <h3 className="text-2xl font-bold leading-[1.5]">
-            {t("cta.title")}
-          </h3>
+          <h3 className="text-2xl font-bold leading-[1.5]">{t("cta.title")}</h3>
 
           <p className="mt-2 text-base leading-[2] text-primary-light/80">
             {t("cta.description")}

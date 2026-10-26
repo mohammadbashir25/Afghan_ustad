@@ -6,6 +6,7 @@ import {
   type RegistrationState,
 } from "@/app/admin/students/actions";
 import PrintReceipt from "@/components/dashboard/student/PrintReceipt";
+import RegistrationDatePicker from "@/components/dashboard/student/RegistrationDatePicker";
 
 const initial: RegistrationState = { status: "idle" };
 const field =
@@ -280,6 +281,7 @@ export default function StudentRegistrationForm({
       action={action}
       className="grid max-w-3xl gap-4 rounded-xl border border-[#DCE7E2] bg-white p-5 sm:grid-cols-2"
     >
+      <RegistrationDatePicker />
       <label className="grid gap-1 text-sm font-medium">
         Student full name
         <input
