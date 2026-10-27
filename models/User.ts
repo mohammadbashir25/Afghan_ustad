@@ -12,16 +12,15 @@ const userSchema = new Schema(
     },
     name: { type: String, required: true, trim: true },
 
-    email: {
-      type: String,
-      required: function (this: { role?: string }) {
-        return this.role !== "STUDENT";
-      },
-      unique: true,
-      sparse: true,
-      lowercase: true,
-      trim: true,
-    },
+email: {
+  type: String,
+  required: function (this: { role?: string }) {
+    return this.role !== "STUDENT";
+  },
+  lowercase: true,
+  trim: true,
+  default: undefined,
+},
     fatherName: { type: String, trim: true, maxlength: 120, default: "" },
     whatsappNumber: {
       type: String,
