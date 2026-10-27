@@ -32,14 +32,27 @@ const makeStudentId = () =>
 const makeReceiptNumber = () => `AUP-${Date.now()}-${randomInt(1000, 9999)}`;
 
 export async function registerStudentAction(
-  previous: RegistrationState = initial, fd: FormData,
+  previous: RegistrationState = initial,
+  fd: FormData,
 ): Promise<RegistrationState> {
   void previous;
+
   const session = await auth();
-  if (!session?.user) return { status: "error", message: "Session expired. Please sign in again." };
-  if (session.user.role !== "MANAGER") {
-    return { status: "error", message: "You are not allowed to register students." };
+
+  if (!session?.user) {
+    return {
+      status: "error",
+      message: "Session expired. Please sign in again.",
+    };
   }
+
+  if (session.user.role !== "MANAGER") {
+    return {
+      status: "error",
+      message: "You are not allowed to register students.",
+    };
+  }
+
   const parsed = studentRegistrationSchema.safeParse({
     registrationDate: textField(fd, "registrationDate"),
     name: textField(fd, "name"),
@@ -53,37 +66,57 @@ export async function registerStudentAction(
     discountAmount: textField(fd, "discountAmount") || "0",
     method: textField(fd, "method"),
   });
-  if (!parsed.success)
+
+  if (!parsed.success) {
     return {
       status: "error",
-      message: parsed.error.issues[0]?.message ?? "Check the form.",
+      message:
+        parsed.error.issues[0]?.message ?? "Check the form.",
     };
+  }
+
   const input = parsed.data;
 
+  // Tracks the operation that fails.
+  let stage = "initialization";
+
   try {
+    stage = "database connection";
     await connectDB();
+
+    stage = "course lookup";
     const course = await Course.findOne({
       _id: input.courseId,
       status: "ACTIVE",
     })
       .select("title fee")
       .lean();
-    if (!course)
+
+    if (!course) {
       return {
         status: "error",
         message: "Select an active course from the course catalogue.",
       };
-    if (input.discountAmount > course.fee)
+    }
+
+    if (input.discountAmount > course.fee) {
       return {
         status: "error",
         message: "Discount cannot exceed the selected course fee.",
       };
+    }
+
     const adjustedFee = course.fee - input.discountAmount;
-    if (input.amountPaid > adjustedFee)
+
+    if (input.amountPaid > adjustedFee) {
       return {
         status: "error",
-        message: "Initial payment cannot exceed the fee after discount.",
+        message:
+          "Initial payment cannot exceed the fee after discount.",
       };
+    }
+
+    stage = "class lookup";
     const selectedClass = input.classId
       ? await ClassRecord.findOne({
           _id: input.classId,
@@ -93,57 +126,88 @@ export async function registerStudentAction(
           .select("_id")
           .lean()
       : null;
-    if (input.classId && !selectedClass)
+
+    if (input.classId && !selectedClass) {
       return {
         status: "error",
         message: "Select a class that belongs to the chosen course.",
       };
-    if (
-      await User.findOne({
-        name: input.name,
-        fatherName: input.fatherName,
-        whatsappNumber: input.whatsappNumber,
-        role: "STUDENT",
-      })
-        .select("_id")
-        .lean()
-    )
+    }
+
+    stage = "existing student lookup";
+    const existingStudent = await User.findOne({
+      name: input.name,
+      fatherName: input.fatherName,
+      whatsappNumber: input.whatsappNumber,
+      role: "STUDENT",
+    })
+      .select("_id")
+      .lean();
+
+    if (existingStudent) {
       return {
         status: "error",
         message:
           "This student already has an account. Use Enroll Existing Student to add another course or class.",
       };
-    if (await User.findOne({ username: input.username }).select("_id").lean())
-      return { status: "error", message: "This username is already taken." };
+    }
 
+    stage = "username lookup";
+    const existingUsername = await User.findOne({
+      username: input.username,
+    })
+      .select("_id")
+      .lean();
+
+    if (existingUsername) {
+      return {
+        status: "error",
+        message: "This username is already taken.",
+      };
+    }
+
+    stage = "student ID generation";
     let studentId = "";
+
     for (let i = 0; i < 5; i++) {
       const candidate = makeStudentId();
+
       if (
-        !(await User.findOne({ studentId: candidate }).select("_id").lean())
+        !(await User.findOne({ studentId: candidate })
+          .select("_id")
+          .lean())
       ) {
         studentId = candidate;
         break;
       }
     }
-    if (!studentId)
+
+    if (!studentId) {
       return {
         status: "error",
         message: "Could not generate an ID. Please retry.",
       };
+    }
 
     let photoUrl = "";
     const rawPhoto = fd.get("photo");
+
     if (rawPhoto instanceof File && rawPhoto.size > 0) {
       if (
         rawPhoto.size > 5 * 1024 * 1024 ||
-        !["image/jpeg", "image/png", "image/webp"].includes(rawPhoto.type)
+        !["image/jpeg", "image/png", "image/webp"].includes(
+          rawPhoto.type,
+        )
       ) {
         return {
           status: "error",
-          message: "Photo must be JPG, PNG, or WebP and no larger than 5 MB.",
+          message:
+            "Photo must be JPG, PNG, or WebP and no larger than 5 MB.",
         };
       }
+
+      stage = "student photo upload";
+
       try {
         const blob = await put(
           `student-photos/${studentId}-${Date.now()}`,
@@ -154,9 +218,11 @@ export async function registerStudentAction(
             contentType: rawPhoto.type,
           },
         );
+
         photoUrl = blob.url;
       } catch (error) {
-        console.error("Student photo upload failed", error);
+        console.error("Student photo upload failed:", error);
+
         return {
           status: "error",
           message:
@@ -164,10 +230,16 @@ export async function registerStudentAction(
         };
       }
     }
+
     const balance = Math.max(0, adjustedFee - input.amountPaid);
     const fullyPaid = balance === 0;
+
+    stage = "User.create";
+
     const student = await User.create({
-      registrationDate: new Date(`${input.registrationDate}T12:00:00.000Z`),
+      registrationDate: new Date(
+        `${input.registrationDate}T12:00:00.000Z`,
+      ),
       name: input.name,
       fatherName: input.fatherName,
       whatsappNumber: input.whatsappNumber,
@@ -183,6 +255,9 @@ export async function registerStudentAction(
       role: "STUDENT",
       isActive: fullyPaid,
     });
+
+    stage = "Enrollment.create";
+
     const enrollment = await Enrollment.create({
       student: student._id,
       course: course._id,
@@ -192,10 +267,16 @@ export async function registerStudentAction(
       discountAmount: input.discountAmount,
       status: fullyPaid ? "ACTIVE" : "PENDING_PAYMENT",
     });
+
     const paidAt = new Date();
     let receiptNumber: string | null = null;
+
     if (input.amountPaid > 0) {
+      stage = "receipt number generation";
       receiptNumber = makeReceiptNumber();
+
+      stage = "Payment.create";
+
       await Payment.create({
         receiptNumber,
         student: student._id,
@@ -213,7 +294,12 @@ export async function registerStudentAction(
         receivedBy: session.user.id,
       });
     }
+
+    stage = "AuditLog model import";
     const AuditLog = (await import("@/models/AuditLog")).default;
+
+    stage = "AuditLog.create";
+
     await AuditLog.create({
       actor: session.user.id,
       actorName: session.user.name || session.user.email || "Staff",
@@ -222,10 +308,12 @@ export async function registerStudentAction(
       targetId: String(student._id),
       details: `Registered ${input.name} (${studentId}) for ${course.title}; fee ${adjustedFee} AFN after ${input.discountAmount} AFN discount; initial payment ${input.amountPaid} AFN.`,
     });
+
     revalidatePath("/admin/students");
     revalidatePath("/manager/students");
     revalidatePath("/manager/student-history");
     revalidatePath("/admin/users");
+
     return {
       status: "success",
       message: fullyPaid
@@ -245,21 +333,43 @@ export async function registerStudentAction(
         paidAt: paidAt.toISOString(),
       },
     };
-  } catch (error) {
-    if (
-      typeof error === "object" &&
-      error !== null &&
-      "code" in error &&
-      error.code === 11000
-    )
+  } catch (error: unknown) {
+    const err = error as {
+      code?: number;
+      keyPattern?: Record<string, unknown>;
+      keyValue?: Record<string, unknown>;
+      message?: string;
+      index?: string;
+      collection?: string;
+      cause?: unknown;
+    };
+
+    // Print the actual error details in the server terminal.
+    console.error("========== STUDENT REGISTRATION ERROR ==========");
+    console.error("Failed stage:", stage);
+    console.error("Error code:", err?.code);
+    console.error("Collection:", err?.collection);
+    console.error("Index:", err?.index);
+    console.error("Conflicting fields:", err?.keyPattern);
+    console.error("Conflicting values:", err?.keyValue);
+    console.error("Full error message:", err?.message);
+    console.error("Full error object:", error);
+    console.error("================================================");
+
+    if (err?.code === 11000) {
+      const fields = err.keyPattern
+        ? Object.keys(err.keyPattern).join(", ")
+        : "Unknown field";
+
       return {
         status: "error",
-        message: "A unique field collided. Please retry.",
+        message: `Duplicate key during ${stage}. Field: ${fields}. Check the server terminal for the exact index and conflicting value.`,
       };
-    console.error("registerStudentAction failed", error);
+    }
+
     return {
       status: "error",
-      message: "Registration failed. Check server logs before retrying.",
+      message: `Registration failed during ${stage}. Check the server terminal for details.`,
     };
   }
 }
