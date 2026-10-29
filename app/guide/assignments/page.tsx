@@ -24,7 +24,9 @@ export default async function GuideAssignments() {
   const classes = await ClassRecord.find({
     guide: session.user.id,
   })
-    .select("_id name")
+    .select("_id name schedule teacher course")
+    .populate("teacher", "name")
+    .populate("course", "title")
     .sort({ name: 1 })
     .lean();
 
@@ -104,19 +106,21 @@ export default async function GuideAssignments() {
             key={String(cls._id)}
             className="overflow-hidden rounded-2xl border border-[#DCE7E2] bg-white"
           >
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#DCE7E2] bg-[#F4F9F6] p-5">
-              <div>
-                <h2 className="text-lg font-bold text-[#053B2E]">{cls.name}</h2>
+            <div>
+              <h2 className="text-lg font-bold text-[#053B2E]">{cls.name}</h2>
 
-                <p className="mt-1 text-sm text-slate-500">
-                  Assignments and evaluations for this class
-                </p>
-              </div>
+              <p className="mt-1 text-sm text-slate-600">
+                Teacher:{" "}
+                {cls.teacher &&
+                typeof cls.teacher === "object" &&
+                "name" in cls.teacher
+                  ? String(cls.teacher.name || "Not assigned")
+                  : "Not assigned"}
+              </p>
 
-              <span className="rounded-full bg-white px-3 py-1 text-sm font-semibold text-[#0B6B4F]">
-                {classAssignments.length}{" "}
-                {classAssignments.length === 1 ? "assignment" : "assignments"}
-              </span>
+              <p className="mt-1 text-sm text-slate-600">
+                Time: {cls.schedule || "Not specified"}
+              </p>
             </div>
 
             {classAssignments.length === 0 ? (
