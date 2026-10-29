@@ -20,6 +20,7 @@ const enrollmentSchema = new Schema(
       index: true,
     },
     courseName: { type: String, required: true, trim: true },
+    enrollmentPin: { type: String, trim: true, default: "", index: true },
     courseFee: { type: Number, required: true, min: 0 },
     discountAmount: { type: Number, default: 0, min: 0 },
     enrolledAt: { type: Date, default: Date.now },

@@ -30,6 +30,7 @@ type ClassOption = {
   courseId: string;
   courseTitle: string;
   schedule: string;
+  teacherName?: string;
 };
 
 export default function StudentRegistrationForm({
@@ -430,21 +431,13 @@ export default function StudentRegistrationForm({
         />
       </label>
 
-      <label className="grid gap-1 text-sm font-medium">
-        Initial student PIN
-        <input
-          name="pin"
-          type="password"
-          inputMode="numeric"
-          pattern="[0-9]{4,8}"
-          minLength={4}
-          maxLength={8}
-          autoComplete="new-password"
-          required
-          className={field}
-          placeholder="4–8 digits"
-        />
-      </label>
+      <div className="rounded-lg bg-[#F1F7F4] p-3 text-sm text-[#12372E]">
+        <p className="font-semibold">Student PIN</p>
+        <p className="mt-1 text-xs">
+          A secure six-digit PIN will be generated automatically after
+          registration and shown on the enrollment bill.
+        </p>
+      </div>
 
       <label className="grid gap-1 text-sm font-medium">
         Course
@@ -483,7 +476,8 @@ export default function StudentRegistrationForm({
             .filter((cls) => cls.courseId === selectedCourseId)
             .map((cls) => (
               <option key={cls.id} value={cls.id}>
-                {cls.name} · {cls.schedule}
+                {cls.name} · {cls.schedule} · Teacher:{" "}
+                {cls.teacherName || "Not assigned"}
               </option>
             ))}
         </select>

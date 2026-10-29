@@ -17,9 +17,18 @@ export type RegistrationState = {
   status: "idle" | "error" | "success";
   message?: string;
   receipt?: {
-    studentName: string; studentId: string; username: string; initialPin: string; courseName: string;
-    courseFee: number; amountPaid: number; balance: number;
-    receiptNumber: string | null; method: string; paidAt: string;
+    studentName: string;
+    studentId: string;
+    username: string;
+    initialPin: string;
+    courseName: string;
+    className?: string;
+    courseFee: number;
+    amountPaid: number;
+    balance: number;
+    receiptNumber: string | null;
+    method: string;
+    paidAt: string;
   };
 };
 const initial: RegistrationState = { status: "idle" };
@@ -53,13 +62,15 @@ export async function registerStudentAction(
     };
   }
 
+  const generatedInitialPin = String(randomInt(100000, 1000000));
+
   const parsed = studentRegistrationSchema.safeParse({
     registrationDate: textField(fd, "registrationDate"),
     name: textField(fd, "name"),
     fatherName: textField(fd, "fatherName"),
     whatsappNumber: textField(fd, "whatsappNumber"),
     username: textField(fd, "username").toLowerCase(),
-    pin: textField(fd, "pin"),
+    pin: generatedInitialPin,
     courseId: textField(fd, "courseId"),
     classId: textField(fd, "classId") || undefined,
     amountPaid: textField(fd, "amountPaid"),
@@ -70,8 +81,7 @@ export async function registerStudentAction(
   if (!parsed.success) {
     return {
       status: "error",
-      message:
-        parsed.error.issues[0]?.message ?? "Check the form.",
+      message: parsed.error.issues[0]?.message ?? "Check the form.",
     };
   }
 
@@ -111,8 +121,7 @@ export async function registerStudentAction(
     if (input.amountPaid > adjustedFee) {
       return {
         status: "error",
-        message:
-          "Initial payment cannot exceed the fee after discount.",
+        message: "Initial payment cannot exceed the fee after discount.",
       };
     }
 
@@ -123,7 +132,7 @@ export async function registerStudentAction(
           course: course._id,
           status: { $ne: "COMPLETED" },
         })
-          .select("_id")
+          .select("_id name schedule")
           .lean()
       : null;
 
@@ -173,9 +182,7 @@ export async function registerStudentAction(
       const candidate = makeStudentId();
 
       if (
-        !(await User.findOne({ studentId: candidate })
-          .select("_id")
-          .lean())
+        !(await User.findOne({ studentId: candidate }).select("_id").lean())
       ) {
         studentId = candidate;
         break;
@@ -195,14 +202,11 @@ export async function registerStudentAction(
     if (rawPhoto instanceof File && rawPhoto.size > 0) {
       if (
         rawPhoto.size > 5 * 1024 * 1024 ||
-        !["image/jpeg", "image/png", "image/webp"].includes(
-          rawPhoto.type,
-        )
+        !["image/jpeg", "image/png", "image/webp"].includes(rawPhoto.type)
       ) {
         return {
           status: "error",
-          message:
-            "Photo must be JPG, PNG, or WebP and no larger than 5 MB.",
+          message: "Photo must be JPG, PNG, or WebP and no larger than 5 MB.",
         };
       }
 
@@ -237,9 +241,7 @@ export async function registerStudentAction(
     stage = "User.create";
 
     const student = await User.create({
-      registrationDate: new Date(
-        `${input.registrationDate}T12:00:00.000Z`,
-      ),
+      registrationDate: new Date(`${input.registrationDate}T12:00:00.000Z`),
       name: input.name,
       fatherName: input.fatherName,
       whatsappNumber: input.whatsappNumber,
@@ -325,6 +327,10 @@ export async function registerStudentAction(
         username: input.username,
         initialPin: input.pin,
         courseName: course.title,
+        className:
+          selectedClass && "name" in selectedClass
+            ? String(selectedClass.name || "")
+            : "",
         courseFee: adjustedFee,
         amountPaid: input.amountPaid,
         balance,
@@ -374,32 +380,155 @@ export async function registerStudentAction(
   }
 }
 
-export async function deleteStudentAction(studentId: string): Promise<{ success: boolean; message: string }> {
+export async function deleteStudentAction(
+  studentId: string,
+): Promise<{ success: boolean; message: string }> {
   const session = await auth();
-  if (!session?.user || session.user.role !== "SUPER_ADMIN") return { success: false, message: "Only Super Admin can delete students." };
-  if (!/^[a-f\d]{24}$/i.test(studentId)) return { success: false, message: "Invalid student record." };
+  if (!session?.user || session.user.role !== "SUPER_ADMIN")
+    return { success: false, message: "Only Super Admin can delete students." };
+  if (!/^[a-f\d]{24}$/i.test(studentId))
+    return { success: false, message: "Invalid student record." };
   try {
     await connectDB();
-    const student = await User.findOne({ _id: studentId, role: "STUDENT" }).select("name studentId").lean();
+    const student = await User.findOne({ _id: studentId, role: "STUDENT" })
+      .select("name studentId")
+      .lean();
     if (!student) return { success: false, message: "Student not found." };
-    const [Attendance, Performance, AssignmentSubmission] = await Promise.all([import("@/models/Attendance"), import("@/models/Performance"), import("@/models/AssignmentSubmission")]);
-    await Payment.updateMany({ student: studentId }, { $set: { studentName: student.name, studentId: student.studentId || "" } });
-    await Promise.all([Attendance.default.deleteMany({ student: studentId }), Performance.default.deleteMany({ student: studentId }), AssignmentSubmission.default.deleteMany({ student: studentId })]);
+    const [Attendance, Performance, AssignmentSubmission] = await Promise.all([
+      import("@/models/Attendance"),
+      import("@/models/Performance"),
+      import("@/models/AssignmentSubmission"),
+    ]);
+    await Payment.updateMany(
+      { student: studentId },
+      {
+        $set: { studentName: student.name, studentId: student.studentId || "" },
+      },
+    );
+    await Promise.all([
+      Attendance.default.deleteMany({ student: studentId }),
+      Performance.default.deleteMany({ student: studentId }),
+      AssignmentSubmission.default.deleteMany({ student: studentId }),
+    ]);
     await User.deleteOne({ _id: studentId, role: "STUDENT" });
     const AuditLog = (await import("@/models/AuditLog")).default;
-    await AuditLog.create({ actor: session.user.id, actorName: session.user.name || session.user.email || "Super Admin", action: "STUDENT_DELETED", targetType: "Student", targetId: studentId, details: `Deleted student ${student.name} (${student.studentId || studentId}).` });
+    await AuditLog.create({
+      actor: session.user.id,
+      actorName: session.user.name || session.user.email || "Super Admin",
+      action: "STUDENT_DELETED",
+      targetType: "Student",
+      targetId: studentId,
+      details: `Deleted student ${student.name} (${student.studentId || studentId}).`,
+    });
     revalidatePath("/admin/students");
     revalidatePath("/manager/students");
     return { success: true, message: "Student deleted." };
   } catch (error) {
     console.error("deleteStudentAction failed", error);
-    return { success: false, message: "Could not delete student. Please check related records first." };
+    return {
+      success: false,
+      message: "Could not delete student. Please check related records first.",
+    };
   }
 }
 
-export async function updateStudentAction(fd: FormData): Promise<{ success: boolean; message: string }> {
- const session=await auth();if(!session?.user||!["SUPER_ADMIN","MANAGER"].includes(session.user.role))return {success:false,message:"You are not allowed to edit student records."};
- const studentId=textField(fd,"studentId");const name=textField(fd,"name").trim();const whatsappNumber=textField(fd,"whatsappNumber").trim();const fatherName=textField(fd,"fatherName").trim();
- if(!/^[a-f\d]{24}$/i.test(studentId)||name.length<2||name.length>120||fatherName.length<2||whatsappNumber.length<7)return {success:false,message:"Please enter a valid name, father name, and WhatsApp number."};
- try{await connectDB();const updated=await User.findOneAndUpdate({_id:studentId,role:"STUDENT"},{$set:{name,fatherName,whatsappNumber}},{new:true,runValidators:true}).select("_id").lean();if(!updated)return {success:false,message:"Student not found."};const AuditLog=(await import("@/models/AuditLog")).default;await AuditLog.create({actor:session.user.id,actorName:session.user.name||session.user.email||"Staff",action:"STUDENT_UPDATED",targetType:"Student",targetId:studentId,details:`Updated personal/contact details for ${name}.`});revalidatePath("/admin/students");revalidatePath("/manager/students");revalidatePath("/manager/student-history");return {success:true,message:"Student record updated."};}catch(error){console.error("updateStudentAction failed",error);return {success:false,message:"Could not update the student record."}}
+export async function updateStudentAction(
+  fd: FormData,
+): Promise<{ success: boolean; message: string }> {
+  const session = await auth();
+  if (!session?.user || !["SUPER_ADMIN", "MANAGER"].includes(session.user.role))
+    return {
+      success: false,
+      message: "You are not allowed to edit student records.",
+    };
+  const studentId = textField(fd, "studentId");
+  const name = textField(fd, "name").trim();
+  const whatsappNumber = textField(fd, "whatsappNumber").trim();
+  const fatherName = textField(fd, "fatherName").trim();
+  const classId = textField(fd, "classId").trim();
+  if (
+    !/^[a-f\d]{24}$/i.test(studentId) ||
+    name.length < 2 ||
+    name.length > 120 ||
+    fatherName.length < 2 ||
+    whatsappNumber.length < 7 ||
+    (classId && !/^[a-f\d]{24}$/i.test(classId))
+  )
+    return {
+      success: false,
+      message: "Please enter valid student details and class.",
+    };
+  try {
+    await connectDB();
+    const current = await User.findOne({ _id: studentId, role: "STUDENT" })
+      .select("course class")
+      .lean();
+    if (!current) return { success: false, message: "Student not found." };
+    let selectedClass = null;
+    if (classId) {
+      selectedClass = await ClassRecord.findOne({
+        _id: classId,
+        status: { $ne: "COMPLETED" },
+      })
+        .select("_id course")
+        .lean();
+      if (!selectedClass)
+        return { success: false, message: "Choose an active class." };
+      if (
+        current.course &&
+        String(selectedClass.course) !== String(current.course)
+      )
+        return {
+          success: false,
+          message:
+            "The selected class must belong to the student's current course. Use enrollment to change courses.",
+        };
+    }
+    const setFields: Record<string, unknown> = {
+      name,
+      fatherName,
+      whatsappNumber,
+    };
+    if (classId) setFields.class = classId;
+    const updated = await User.findOneAndUpdate(
+      { _id: studentId, role: "STUDENT" },
+      { $set: setFields },
+      { new: true, runValidators: true },
+    )
+      .select("_id")
+      .lean();
+    if (!updated) return { success: false, message: "Student not found." };
+    if (classId && current.course) {
+      const Enrollment = (await import("@/models/Enrollment")).default;
+      await Enrollment.updateMany(
+        {
+          student: studentId,
+          course: current.course,
+          status: { $in: ["ACTIVE", "PENDING_PAYMENT"] },
+        },
+        { $set: { class: classId } },
+      );
+    }
+    const AuditLog = (await import("@/models/AuditLog")).default;
+    await AuditLog.create({
+      actor: session.user.id,
+      actorName: session.user.name || session.user.email || "Staff",
+      action: "STUDENT_UPDATED",
+      targetType: "Student",
+      targetId: studentId,
+      details: `Updated personal/contact details and class assignment for ${name}.`,
+    });
+    revalidatePath("/admin/students");
+    revalidatePath("/manager/students");
+    revalidatePath("/manager/student-history");
+    revalidatePath("/manager/skill-center");
+    revalidatePath("/student");
+    return {
+      success: true,
+      message: "Student record and class assignment updated.",
+    };
+  } catch (error) {
+    console.error("updateStudentAction failed", error);
+    return { success: false, message: "Could not update the student record." };
+  }
 }

@@ -193,6 +193,11 @@ export const MANAGER_NAVIGATION: DashboardNavSection[] = [
         icon: FiCheckSquare,
       },
       { href: "/manager/skill-center", label: "Skill Center", icon: FiGrid },
+      {
+        href: "/manager/monthly-tests",
+        label: "Monthly Class Tests",
+        icon: FiClipboard,
+      },
     ],
   },
 

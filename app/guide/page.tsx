@@ -6,6 +6,7 @@ import Attendance from "@/models/Attendance";
 import Assignment from "@/models/Assignment";
 import Performance from "@/models/Performance";
 import User from "@/models/User";
+import Course from "@/models/Course";
 import StaffAdjustment from "@/models/StaffAdjustment";
 import ResourcePage from "@/components/dashboard/ResourcePage";
 export const metadata = { title: "Skill Center Guide Dashboard | AfghanUstad" };

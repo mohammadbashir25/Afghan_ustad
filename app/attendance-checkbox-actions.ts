@@ -1,4 +1,3 @@
-
 "use server";
 
 import { revalidatePath } from "next/cache";
@@ -13,8 +12,7 @@ import User from "@/models/User";
 import Attendance from "@/models/Attendance";
 import AuditLog from "@/models/AuditLog";
 
-const val = (fd: FormData, key: string) =>
-  String(fd.get(key) || "").trim();
+const val = (fd: FormData, key: string) => String(fd.get(key) || "").trim();
 
 export async function saveCheckboxAttendanceAction(fd: FormData) {
   // Only Skill Center Guides may record student attendance.
@@ -53,10 +51,10 @@ export async function saveCheckboxAttendanceAction(fd: FormData) {
     _id: classId,
     guide: session.user.id,
   })
-    .select("guide course")
+    .select("guide course status")
     .lean();
 
-  if (!cls) {
+  if (!cls || cls.status === "COMPLETED") {
     redirect(`${base}?error=class`);
   }
 
@@ -70,9 +68,7 @@ export async function saveCheckboxAttendanceAction(fd: FormData) {
       .select("course class courseName")
       .lean(),
 
-    Course.findById(cls.course)
-      .select("title")
-      .lean(),
+    Course.findById(cls.course).select("title").lean(),
   ]);
 
   if (!student) {
@@ -83,12 +79,8 @@ export async function saveCheckboxAttendanceAction(fd: FormData) {
   // Supports both class-based and legacy course-based student records.
   const enrolled = student.class
     ? String(student.class) === classId
-    : (
-        (student.course &&
-          String(student.course) === String(cls.course)) ||
-        (course?.title &&
-          student.courseName === course.title)
-      );
+    : (student.course && String(student.course) === String(cls.course)) ||
+      (course?.title && student.courseName === course.title);
 
   if (!enrolled) {
     redirect(`${base}?error=student`);
@@ -116,7 +108,7 @@ export async function saveCheckboxAttendanceAction(fd: FormData) {
       upsert: true,
       new: true,
       runValidators: true,
-    }
+    },
   );
 
   // Keep an audit trail of the attendance change.

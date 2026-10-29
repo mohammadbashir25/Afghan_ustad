@@ -1,5 +1,63 @@
 @import "tailwindcss";
 
+
+/* AfghanUstad 80mm thermal receipt printing */
+@media print {
+  @page {
+    size: 80mm auto;
+    margin: 0;
+  }
+
+  html,
+  body {
+    width: 80mm !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  .receipt,
+  .receipt * {
+    visibility: visible !important;
+  }
+
+  .receipt {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 72mm !important;
+    max-width: 72mm !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 2mm !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: #fff !important;
+    color: #000 !important;
+    font-family: monospace !important;
+    font-size: 9pt !important;
+    line-height: 1.4 !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .receipt hr {
+    border: 0 !important;
+    border-top: 1px dashed #000 !important;
+  }
+
+  .receipt-print-button {
+    display: none !important;
+  }
+}
+
+
 @theme {
   /* ===== Brand ===== */
 

@@ -13,7 +13,7 @@ export default async function StudentDashboardPage() {
   await connectDB();
   const student = await User.findById(session.user.id)
     .select(
-      "name fatherName studentId whatsappNumber course class courseName courseFee",
+      "name fatherName studentId whatsappNumber photoUrl course class courseName courseFee",
     )
     .lean();
   if (!student)
@@ -121,12 +121,29 @@ export default async function StudentDashboardPage() {
   return (
     <div className="space-y-6">
       <section className="overflow-hidden rounded-2xl bg-[#053B2E] p-6 text-white sm:p-8">
-        <p className="text-sm font-medium text-white/70">
-          AFGHANUSTAD · STUDENT PORTAL
-        </p>
-        <h1 className="mt-2 text-2xl font-bold sm:text-3xl">
-          Welcome back, {student.name}
-        </h1>
+        <div className="flex items-center gap-4">
+          <div className="h-16 w-16 shrink-0 overflow-hidden rounded-full border-2 border-white/40 bg-white/10">
+            {student.photoUrl ? (
+              <img
+                src={student.photoUrl}
+                alt={`${student.name} profile`}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-xl font-bold">
+                {student.name?.slice(0, 1)?.toUpperCase() || "S"}
+              </div>
+            )}
+          </div>
+          <div>
+            <p className="text-sm font-medium text-white/70">
+              AFGHANUSTAD · STUDENT PORTAL
+            </p>
+            <h1 className="mt-2 text-2xl font-bold sm:text-3xl">
+              Welcome back, {student.name}
+            </h1>
+          </div>
+        </div>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-white/80">
           Your Skill Center guide records ongoing task performance, KPI,
           attendance, and feedback. Use your dashboard to review your progress

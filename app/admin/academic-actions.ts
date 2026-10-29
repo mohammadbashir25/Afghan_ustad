@@ -82,10 +82,10 @@ export async function recordAttendanceAction(fd: FormData) {
     _id: classId,
     guide: s.user.id,
   })
-    .select("guide course")
+    .select("guide course status")
     .lean();
 
-  if (!cls) {
+  if (!cls || cls.status === "COMPLETED") {
     redirect(`${base}?error=class`);
   }
 

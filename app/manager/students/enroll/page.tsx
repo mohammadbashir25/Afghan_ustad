@@ -1,2 +1,106 @@
-import Link from "next/link";import {requireRole} from "@/lib/auth/requireRole";import {connectDB} from "@/lib/mongodb";import User from "@/models/User";import Course from "@/models/Course";import ClassRecord from "@/models/Class";import EnrollExistingStudentForm from "@/components/dashboard/student/EnrollExistingStudentForm";
-export const metadata={title:"Enroll Existing Student | AfghanUstad"};export default async function Page({searchParams}:{searchParams:Promise<{created?:string;error?:string}>}){await requireRole(["MANAGER"]);await connectDB();const [studentDocs,courseDocs,classDocs,p]=await Promise.all([User.find({role:"STUDENT"}).select("name studentId whatsappNumber isActive").sort({name:1}).lean(),Course.find({status:"ACTIVE"}).select("title fee _id").sort({title:1}).lean(),ClassRecord.find({status:{$ne:"COMPLETED"}}).populate("course","title").select("name course schedule _id").sort({name:1}).lean(),searchParams]);const students=studentDocs.map(s=>({id:String(s._id),name:s.name,studentId:s.studentId||"",whatsappNumber:s.whatsappNumber||"",isActive:s.isActive}));const courses=courseDocs.map(c=>({id:String(c._id),title:c.title,fee:c.fee}));const classes=classDocs.map(c=>({id:String(c._id),name:c.name,courseId:String((c.course as unknown as {_id?:unknown}|null)?._id||c.course),courseTitle:(c.course as unknown as {title?:string}|null)?.title||"Course",schedule:c.schedule}));const messages:Record<string,string>={invalid:"Please check the selected student, course, discount, and payment.",record:"Student or active course not found.",amount:"Discount and initial payment must fit within the course fee.",class:"Choose a class that belongs to the selected course.",duplicate:"This student is already enrolled in that class/course."};return <div className="space-y-5"><Link href="/manager/students" className="text-sm font-semibold text-[#0B6B4F]">← Students</Link><header><h1 className="text-2xl font-bold text-[#053B2E]">Enroll Existing Student</h1><p className="mt-2 text-sm text-slate-500">Use this when a current student starts another course or class. It creates an enrollment record—not a duplicate student account. Each enrollment has its own fee, discount, payment balance, attendance, and progress.</p></header>{p.created&&<p className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-800">Enrollment recorded. Access to this class is enabled only after its fee is fully paid.</p>}{p.error&&<p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{messages[p.error]||"Could not create the enrollment."}</p>}<EnrollExistingStudentForm students={students} courses={courses} classes={classes}/></div>}
+import Link from "next/link";
+import { requireRole } from "@/lib/auth/requireRole";
+import { connectDB } from "@/lib/mongodb";
+import User from "@/models/User";
+import Course from "@/models/Course";
+import ClassRecord from "@/models/Class";
+import EnrollExistingStudentForm from "@/components/dashboard/student/EnrollExistingStudentForm";
+export const metadata = { title: "Enroll Existing Student | AfghanUstad" };
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ created?: string; error?: string }>;
+}) {
+  await requireRole(["MANAGER"]);
+  await connectDB();
+  const [studentDocs, courseDocs, classDocs, p] = await Promise.all([
+    User.find({ role: "STUDENT" })
+      .select("name studentId whatsappNumber isActive")
+      .sort({ name: 1 })
+      .lean(),
+    Course.find({ status: "ACTIVE" })
+      .select("title fee _id")
+      .sort({ title: 1 })
+      .lean(),
+    ClassRecord.find({ status: { $ne: "COMPLETED" } })
+      .populate("course", "title")
+      .populate("teacher", "name")
+      .select("name course schedule teacher _id")
+      .sort({ name: 1 })
+      .lean(),
+    searchParams,
+  ]);
+  const students = studentDocs.map((s) => ({
+    id: String(s._id),
+    name: s.name,
+    studentId: s.studentId || "",
+    whatsappNumber: s.whatsappNumber || "",
+    isActive: s.isActive,
+  }));
+  const courses = courseDocs.map((c) => ({
+    id: String(c._id),
+    title: c.title,
+    fee: c.fee,
+  }));
+  const classes = classDocs.map((c) => ({
+    id: String(c._id),
+    name: c.name,
+    courseId: String(
+      (c.course as unknown as { _id?: unknown } | null)?._id || c.course,
+    ),
+    courseTitle:
+      (c.course as unknown as { title?: string } | null)?.title || "Course",
+    schedule: c.schedule,
+    teacherName:
+      (c.teacher as unknown as { name?: string } | null)?.name ||
+      "Not assigned",
+  }));
+  const messages: Record<string, string> = {
+    invalid:
+      "Please check the selected student, course, discount, and payment.",
+    record: "Student or active course not found.",
+    amount: "Discount and initial payment must fit within the course fee.",
+    class: "Choose a class that belongs to the selected course.",
+    duplicate: "This student is already enrolled in that class/course.",
+  };
+  return (
+    <div className="space-y-5">
+      <Link
+        href="/manager/students"
+        className="text-sm font-semibold text-[#0B6B4F]"
+      >
+        ← Students
+      </Link>
+      <header>
+        <h1 className="text-2xl font-bold text-[#053B2E]">
+          Enroll Existing Student
+        </h1>
+        <p className="mt-2 text-sm text-slate-500">
+          Use this when a current student starts another course or class. It
+          creates an enrollment record—not a duplicate student account. Each
+          enrollment has its own fee, discount, payment balance, attendance, and
+          progress.
+        </p>
+      </header>
+      {p.created && (
+        <p className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-800">
+          Enrollment recorded. Access to this class is enabled only after its
+          fee is fully paid.
+        </p>
+      )}
+      {p.error && (
+        <p
+          role="alert"
+          className="rounded-lg bg-red-50 p-3 text-sm text-red-700"
+        >
+          {messages[p.error] || "Could not create the enrollment."}
+        </p>
+      )}
+      <EnrollExistingStudentForm
+        students={students}
+        courses={courses}
+        classes={classes}
+      />
+    </div>
+  );
+}
