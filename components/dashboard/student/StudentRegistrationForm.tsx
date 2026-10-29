@@ -30,7 +30,6 @@ type ClassOption = {
   courseId: string;
   courseTitle: string;
   schedule: string;
-  teacherName?: string;
 };
 
 export default function StudentRegistrationForm({
@@ -57,14 +56,12 @@ export default function StudentRegistrationForm({
   const [cameraError, setCameraError] = useState("");
   const [switchingCamera, setSwitchingCamera] = useState(false);
 
-  // Attach each new stream to the video element.
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.srcObject = cameraStream;
     }
   }, [cameraStream]);
 
-  // Stop the active camera when this component unmounts.
   useEffect(() => {
     return () => {
       streamRef.current?.getTracks().forEach((track) => track.stop());
@@ -110,8 +107,6 @@ export default function StudentRegistrationForm({
     let nextStream: MediaStream | null = null;
 
     try {
-      // An exact deviceId selects the chosen USB/built-in camera.
-      // Without one, ask the browser for its preferred user-facing camera.
       nextStream = await navigator.mediaDevices.getUserMedia({
         video: deviceId
           ? { deviceId: { exact: deviceId } }
@@ -123,7 +118,6 @@ export default function StudentRegistrationForm({
       const actualDeviceId =
         activeTrack?.getSettings().deviceId ?? deviceId ?? "";
 
-      // Device labels usually become available after camera permission is granted.
       const devices = await navigator.mediaDevices.enumerateDevices();
       const availableCameras = devices
         .filter((device) => device.kind === "videoinput")
@@ -135,7 +129,6 @@ export default function StudentRegistrationForm({
       setCameras(availableCameras);
       setSelectedCameraId(actualDeviceId);
 
-      // Only stop the previous stream after the requested camera opened.
       streamRef.current?.getTracks().forEach((track) => track.stop());
       streamRef.current = nextStream;
       setCameraStream(nextStream);
@@ -150,7 +143,6 @@ export default function StudentRegistrationForm({
           : "Could not access a camera. Allow camera permission in your browser, check that the camera is connected, or choose an image from your computer.",
       );
 
-      // Refresh list in case a camera was disconnected or became unavailable.
       await refreshCameraList();
     } finally {
       setSwitchingCamera(false);
@@ -192,7 +184,6 @@ export default function StudentRegistrationForm({
       return;
     }
 
-    // Save the actual camera image without mirroring it.
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
     canvas.toBlob(
@@ -259,8 +250,9 @@ export default function StudentRegistrationForm({
             </strong>
           </p>
           <p className="mt-2 text-xs">
-            This PIN is shown only in this confirmation and is never printed on
-            the payment receipt. Share it privately.
+            The initial PIN is also printed on the enrollment receipt so the
+            student can sign in. Hand the receipt directly to the student and
+            ask them to change the PIN after their first login.
           </p>
         </section>
 
@@ -283,6 +275,7 @@ export default function StudentRegistrationForm({
       className="grid max-w-3xl gap-4 rounded-xl border border-[#DCE7E2] bg-white p-5 sm:grid-cols-2"
     >
       <RegistrationDatePicker />
+
       <label className="grid gap-1 text-sm font-medium">
         Student full name
         <input
@@ -431,13 +424,21 @@ export default function StudentRegistrationForm({
         />
       </label>
 
-      <div className="rounded-lg bg-[#F1F7F4] p-3 text-sm text-[#12372E]">
-        <p className="font-semibold">Student PIN</p>
-        <p className="mt-1 text-xs">
-          A secure six-digit PIN will be generated automatically after
-          registration and shown on the enrollment bill.
-        </p>
-      </div>
+      <label className="grid gap-1 text-sm font-medium">
+        Initial student PIN
+        <input
+          name="pin"
+          type="password"
+          inputMode="numeric"
+          pattern="[0-9]{4,8}"
+          minLength={4}
+          maxLength={8}
+          autoComplete="new-password"
+          required
+          className={field}
+          placeholder="4–8 digits"
+        />
+      </label>
 
       <label className="grid gap-1 text-sm font-medium">
         Course
@@ -476,8 +477,7 @@ export default function StudentRegistrationForm({
             .filter((cls) => cls.courseId === selectedCourseId)
             .map((cls) => (
               <option key={cls.id} value={cls.id}>
-                {cls.name} · {cls.schedule} · Teacher:{" "}
-                {cls.teacherName || "Not assigned"}
+                {cls.name} · {cls.schedule}
               </option>
             ))}
         </select>

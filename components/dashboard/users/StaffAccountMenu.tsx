@@ -1,91 +1,31 @@
-
 "use client";
 
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
+import Link from "next/link";
 import {
-  resetStaffPasswordAction,
-  setStaffActiveAction,
-} from "@/app/admin/users/actions";
-import { deleteStaffAccountAction } from "@/app/admin/users/actions";
+  FiChevronDown,
+  FiEdit3,
+  FiKey,
+  FiPower,
+  FiTrash2,
+} from "react-icons/fi";
+
+import StudentStatusToggle from "@/components/dashboard/users/StudentStatusToggle";
+import ResetStudentPinButton from "@/components/dashboard/users/ResetStudentPinButton";
+import DeleteStudentButton from "@/components/dashboard/users/DeleteStudentButton";
 
 type Props = {
-  userId: string;
-  userName: string;
+  studentId: string;
+  studentName: string;
   isActive: boolean;
 };
 
-export default function StaffAccountMenu({
-  userId,
-  userName,
+export default function StudentAccountMenu({
+  studentId,
+  studentName,
   isActive,
 }: Props) {
-  const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [pending, startTransition] = useTransition();
-  const [message, setMessage] = useState("");
-  const [temporaryPassword, setTemporaryPassword] = useState("");
-
-  function toggleStatus() {
-    const next = !isActive;
-    const verb = next ? "activate" : "deactivate";
-
-    if (!window.confirm(`Are you sure you want to ${verb} ${userName}'s account?`)) {
-      return;
-    }
-
-    setMessage("");
-    setTemporaryPassword("");
-
-    startTransition(async () => {
-      const result = await setStaffActiveAction(userId, next);
-      setMessage(result.message);
-
-      if (result.success) {
-        setOpen(false);
-        router.refresh();
-      }
-    });
-  }
-
-  function resetPassword() {
-    if (!window.confirm(`Reset the password for ${userName}? Their current password will stop working.`)) {
-      return;
-    }
-
-    setMessage("");
-    setTemporaryPassword("");
-
-    startTransition(async () => {
-      const result = await resetStaffPasswordAction(userId);
-      setMessage(result.message);
-
-      if (result.success && result.password) {
-        setTemporaryPassword(result.password);
-      }
-    });
-  }
-
-  function deleteAccount() {
-    const confirmation = window.prompt(
-      `Permanently delete ${userName}? Type DELETE to confirm.`,
-    );
-
-    if (confirmation !== "DELETE") return;
-
-    setMessage("");
-    setTemporaryPassword("");
-
-    startTransition(async () => {
-      const result = await deleteStaffAccountAction(userId);
-      setMessage(result.message);
-
-      if (result.success) {
-        setOpen(false);
-        router.refresh();
-      }
-    });
-  }
 
   return (
     <div className="relative inline-block text-left">
@@ -93,68 +33,80 @@ export default function StaffAccountMenu({
         type="button"
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
-        className="inline-flex items-center gap-2 rounded-lg border border-[#DCE7E2] bg-white px-4 py-2 text-sm font-semibold text-[#053B2E] shadow-sm hover:bg-[#F3F8F5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B6B4F]"
+        aria-haspopup="menu"
+        className="inline-flex items-center gap-2 rounded-xl border border-[#BFD8CC] bg-[#F4FAF6] px-3.5 py-2.5 text-sm font-semibold text-[#07563F] shadow-sm transition hover:border-[#0B6B4F] hover:bg-[#E6F4EE] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B6B4F] focus-visible:ring-offset-2"
       >
-        Manage <span aria-hidden="true">{open ? "▲" : "▼"}</span>
+        Manage student
+        <FiChevronDown
+          className={`size-4 transition-transform ${open ? "rotate-180" : ""}`}
+          aria-hidden="true"
+        />
       </button>
 
       {open && (
-        <div className="absolute right-0 z-30 mt-2 w-56 rounded-xl border border-[#DCE7E2] bg-white p-2 shadow-lg">
+        <>
           <button
             type="button"
-            disabled={pending}
-            onClick={toggleStatus}
-            className={`block w-full rounded-lg px-3 py-2 text-left text-sm font-medium hover:bg-[#F3F8F5] disabled:opacity-50 ${
-              isActive ? "text-red-700" : "text-[#0B6B4F]"
-            }`}
-          >
-            {isActive ? "Deactivate account" : "Activate account"}
-          </button>
+            aria-label="Close student actions menu"
+            className="fixed inset-0 z-20 cursor-default"
+            onClick={() => setOpen(false)}
+          />
 
-          <button
-            type="button"
-            disabled={pending || !isActive}
-            onClick={resetPassword}
-            className="block w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-[#053B2E] hover:bg-[#F3F8F5] disabled:cursor-not-allowed disabled:opacity-50"
+          <div
+            role="menu"
+            className="absolute right-0 z-30 mt-2 w-64 overflow-hidden rounded-2xl border border-[#DCE7E2] bg-white p-2 shadow-xl shadow-[#053B2E]/10 ring-1 ring-black/5"
           >
-            Reset password
-          </button>
-          <div className="my-1 border-t border-[#E8EFEB] pt-1">
-  <button
-    type="button"
-    disabled={pending}
-    onClick={deleteAccount}
-    className="block w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-red-700 hover:bg-red-50 disabled:opacity-50"
-  >
-    Delete account
-  </button>
-</div>
-        </div>
-        
-      )}
-
-      {(message || temporaryPassword) && (
-        <div className="mt-2 max-w-64 space-y-2 text-xs text-slate-600" role="status">
-          {message && <p>{message}</p>}
-          {temporaryPassword && (
-            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
-              <p className="font-semibold text-amber-950">Temporary password</p>
-              <p className="mt-1 break-all font-mono text-sm font-bold text-amber-950">
-                {temporaryPassword}
+            <div className="border-b border-[#E8EFEB] px-3 py-2.5">
+              <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#64748B]">
+                Student account
               </p>
-              <button
-                type="button"
-                onClick={() => {
-                  void navigator.clipboard.writeText(temporaryPassword);
-                  setMessage("Temporary password copied.");
-                }}
-                className="mt-2 rounded border border-amber-300 px-2 py-1 font-medium text-amber-950 hover:bg-amber-100"
-              >
-                Copy password
-              </button>
+              <p className="mt-1 truncate text-sm font-semibold text-[#053B2E]">
+                {studentName}
+              </p>
             </div>
-          )}
-        </div>
+
+            <Link
+              role="menuitem"
+              href={`/admin/students/${studentId}/edit`}
+              onClick={() => setOpen(false)}
+              className="mt-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[#12372E] transition hover:bg-[#E6F4EE]"
+            >
+              <FiEdit3 className="size-4 text-[#0B6B4F]" />
+              Edit student details
+            </Link>
+
+            <div className="flex items-start gap-3 rounded-xl px-3 py-2.5 hover:bg-slate-50">
+              <FiPower className="mt-0.5 size-4 shrink-0 text-[#0B6B4F]" />
+              <div className="min-w-0 flex-1">
+                <StudentStatusToggle
+                  studentId={studentId}
+                  isActive={isActive}
+                />
+              </div>
+            </div>
+
+            {isActive && (
+              <div className="flex items-start gap-3 rounded-xl px-3 py-2.5 hover:bg-slate-50">
+                <FiKey className="mt-0.5 size-4 shrink-0 text-amber-600" />
+                <div className="min-w-0 flex-1">
+                  <ResetStudentPinButton studentId={studentId} />
+                </div>
+              </div>
+            )}
+
+            <div className="mt-1 border-t border-[#F1D9D9] pt-1">
+              <div className="flex items-start gap-3 rounded-xl px-3 py-2.5 hover:bg-red-50">
+                <FiTrash2 className="mt-0.5 size-4 shrink-0 text-red-600" />
+                <div className="min-w-0 flex-1">
+                  <DeleteStudentButton
+                    studentId={studentId}
+                    studentName={studentName}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );
