@@ -30,7 +30,7 @@ import {
   type UserStatusFilter,
 } from "@/lib/users/queries";
 import { ROLE_LABELS } from "@/lib/users/roles";
-import StaffAccountMenu from "@/components/dashboard/users/StaffAccountMenu";
+import StudentAccountMenu from "@/components/dashboard/users/StudentAccountMenu";
 
 export const metadata: Metadata = {
   title: "Users",
@@ -138,9 +138,9 @@ const columns: DashboardTableColumn<UserRow>[] = [
     header: "Actions",
     className: "min-w-28 whitespace-nowrap",
     render: (user) => (
-      <StaffAccountMenu
-        userId={user.id}
-        userName={user.name}
+      <StudentAccountMenu
+        studentId={user.id}
+        studentName={user.name}
         isActive={user.isActive}
       />
     ),
