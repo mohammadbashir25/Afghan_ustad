@@ -22,9 +22,6 @@ export type RegistrationState = {
     username: string;
     initialPin: string;
     courseName: string;
-    className: string;
-    classSchedule: string;
-    teacherName: string;
     courseFee: number;
     amountPaid: number;
     balance: number;
@@ -33,19 +30,13 @@ export type RegistrationState = {
     paidAt: string;
   };
 };
-
 const initial: RegistrationState = { status: "idle" };
-
 const textField = (fd: FormData, key: string) => {
   const value = fd.get(key);
   return typeof value === "string" ? value : "";
 };
-
 const makeStudentId = () =>
-  `AU-${new Date().getFullYear()}-${randomInt(0, 1_000_000)
-    .toString()
-    .padStart(6, "0")}`;
-
+  `AU-${new Date().getFullYear()}-${randomInt(0, 1_000_000).toString().padStart(6, "0")}`;
 const makeReceiptNumber = () => `AUP-${Date.now()}-${randomInt(1000, 9999)}`;
 
 export async function registerStudentAction(
@@ -76,7 +67,6 @@ export async function registerStudentAction(
     fatherName: textField(fd, "fatherName"),
     whatsappNumber: textField(fd, "whatsappNumber"),
     username: textField(fd, "username").toLowerCase(),
-    pin: textField(fd, "pin"),
     courseId: textField(fd, "courseId"),
     classId: textField(fd, "classId") || undefined,
     amountPaid: textField(fd, "amountPaid"),
@@ -92,6 +82,10 @@ export async function registerStudentAction(
   }
 
   const input = parsed.data;
+  // Generate a private six-digit PIN only when creating a brand-new student.
+  const initialPin = String(randomInt(100000, 1_000_000));
+
+  // Tracks the operation that fails.
   let stage = "initialization";
 
   try {
@@ -130,15 +124,13 @@ export async function registerStudentAction(
     }
 
     stage = "class lookup";
-
     const selectedClass = input.classId
       ? await ClassRecord.findOne({
           _id: input.classId,
           course: course._id,
           status: { $ne: "COMPLETED" },
         })
-          .select("_id name schedule teacher")
-          .populate("teacher", "name")
+          .select("_id")
           .lean()
       : null;
 
@@ -150,7 +142,6 @@ export async function registerStudentAction(
     }
 
     stage = "existing student lookup";
-
     const existingStudent = await User.findOne({
       name: input.name,
       fatherName: input.fatherName,
@@ -169,7 +160,6 @@ export async function registerStudentAction(
     }
 
     stage = "username lookup";
-
     const existingUsername = await User.findOne({
       username: input.username,
     })
@@ -256,7 +246,7 @@ export async function registerStudentAction(
       photoUrl,
       username: input.username,
       studentId,
-      pinHash: await bcrypt.hash(input.pin, 12),
+      pinHash: await bcrypt.hash(initialPin, 12),
       course: course._id,
       class: selectedClass?._id ?? null,
       courseName: course.title,
@@ -333,16 +323,8 @@ export async function registerStudentAction(
         studentName: input.name,
         studentId,
         username: input.username,
-        initialPin: input.pin,
+        initialPin,
         courseName: course.title,
-        className: selectedClass?.name || "Class not selected",
-        classSchedule: selectedClass?.schedule || "Schedule not set",
-        teacherName:
-          selectedClass?.teacher &&
-          typeof selectedClass.teacher === "object" &&
-          "name" in selectedClass.teacher
-            ? String(selectedClass.teacher.name || "Not assigned")
-            : "Not assigned",
         courseFee: adjustedFee,
         amountPaid: input.amountPaid,
         balance,
@@ -359,8 +341,10 @@ export async function registerStudentAction(
       message?: string;
       index?: string;
       collection?: string;
+      cause?: unknown;
     };
 
+    // Print the actual error details in the server terminal.
     console.error("========== STUDENT REGISTRATION ERROR ==========");
     console.error("Failed stage:", stage);
     console.error("Error code:", err?.code);
@@ -394,58 +378,34 @@ export async function deleteStudentAction(
   studentId: string,
 ): Promise<{ success: boolean; message: string }> {
   const session = await auth();
-
-  if (!session?.user || session.user.role !== "SUPER_ADMIN") {
-    return {
-      success: false,
-      message: "Only Super Admin can delete students.",
-    };
-  }
-
-  if (!/^[a-f\d]{24}$/i.test(studentId)) {
+  if (!session?.user || session.user.role !== "SUPER_ADMIN")
+    return { success: false, message: "Only Super Admin can delete students." };
+  if (!/^[a-f\d]{24}$/i.test(studentId))
     return { success: false, message: "Invalid student record." };
-  }
-
   try {
     await connectDB();
-
-    const student = await User.findOne({
-      _id: studentId,
-      role: "STUDENT",
-    })
+    const student = await User.findOne({ _id: studentId, role: "STUDENT" })
       .select("name studentId")
       .lean();
-
-    if (!student) {
-      return { success: false, message: "Student not found." };
-    }
-
+    if (!student) return { success: false, message: "Student not found." };
     const [Attendance, Performance, AssignmentSubmission] = await Promise.all([
       import("@/models/Attendance"),
       import("@/models/Performance"),
       import("@/models/AssignmentSubmission"),
     ]);
-
     await Payment.updateMany(
       { student: studentId },
       {
-        $set: {
-          studentName: student.name,
-          studentId: student.studentId || "",
-        },
+        $set: { studentName: student.name, studentId: student.studentId || "" },
       },
     );
-
     await Promise.all([
       Attendance.default.deleteMany({ student: studentId }),
       Performance.default.deleteMany({ student: studentId }),
       AssignmentSubmission.default.deleteMany({ student: studentId }),
     ]);
-
     await User.deleteOne({ _id: studentId, role: "STUDENT" });
-
     const AuditLog = (await import("@/models/AuditLog")).default;
-
     await AuditLog.create({
       actor: session.user.id,
       actorName: session.user.name || session.user.email || "Super Admin",
@@ -454,14 +414,11 @@ export async function deleteStudentAction(
       targetId: studentId,
       details: `Deleted student ${student.name} (${student.studentId || studentId}).`,
     });
-
     revalidatePath("/admin/students");
     revalidatePath("/manager/students");
-
     return { success: true, message: "Student deleted." };
   } catch (error) {
     console.error("deleteStudentAction failed", error);
-
     return {
       success: false,
       message: "Could not delete student. Please check related records first.",
@@ -473,38 +430,28 @@ export async function updateStudentAction(
   fd: FormData,
 ): Promise<{ success: boolean; message: string }> {
   const session = await auth();
-
-  if (
-    !session?.user ||
-    !["SUPER_ADMIN", "MANAGER"].includes(session.user.role)
-  ) {
+  if (!session?.user || !["SUPER_ADMIN", "MANAGER"].includes(session.user.role))
     return {
       success: false,
       message: "You are not allowed to edit student records.",
     };
-  }
-
   const studentId = textField(fd, "studentId");
   const name = textField(fd, "name").trim();
   const whatsappNumber = textField(fd, "whatsappNumber").trim();
   const fatherName = textField(fd, "fatherName").trim();
-
   if (
     !/^[a-f\d]{24}$/i.test(studentId) ||
     name.length < 2 ||
     name.length > 120 ||
     fatherName.length < 2 ||
     whatsappNumber.length < 7
-  ) {
+  )
     return {
       success: false,
       message: "Please enter a valid name, father name, and WhatsApp number.",
     };
-  }
-
   try {
     await connectDB();
-
     const updated = await User.findOneAndUpdate(
       { _id: studentId, role: "STUDENT" },
       { $set: { name, fatherName, whatsappNumber } },
@@ -512,13 +459,8 @@ export async function updateStudentAction(
     )
       .select("_id")
       .lean();
-
-    if (!updated) {
-      return { success: false, message: "Student not found." };
-    }
-
+    if (!updated) return { success: false, message: "Student not found." };
     const AuditLog = (await import("@/models/AuditLog")).default;
-
     await AuditLog.create({
       actor: session.user.id,
       actorName: session.user.name || session.user.email || "Staff",
@@ -527,18 +469,12 @@ export async function updateStudentAction(
       targetId: studentId,
       details: `Updated personal/contact details for ${name}.`,
     });
-
     revalidatePath("/admin/students");
     revalidatePath("/manager/students");
     revalidatePath("/manager/student-history");
-
     return { success: true, message: "Student record updated." };
   } catch (error) {
     console.error("updateStudentAction failed", error);
-
-    return {
-      success: false,
-      message: "Could not update the student record.",
-    };
+    return { success: false, message: "Could not update the student record." };
   }
 }

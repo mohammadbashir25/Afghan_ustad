@@ -29,7 +29,6 @@ export const studentRegistrationSchema = z.object({
       /^[a-z0-9._-]+$/,
       "Use letters, numbers, dots, underscores, or hyphens.",
     ),
-  pin: z.string().regex(/^\d{4,8}$/, "Student PIN must contain 4 to 8 digits."),
   courseId: z.string().regex(/^[a-f\d]{24}$/i, "Select a valid course."),
   classId: z
     .string()
