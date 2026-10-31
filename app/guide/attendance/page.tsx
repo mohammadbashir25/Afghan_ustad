@@ -1,2 +1,161 @@
-import {requireRole} from "@/lib/auth/requireRole";import {connectDB} from "@/lib/mongodb";import ClassRecord from "@/models/Class";import User from "@/models/User";import Enrollment from "@/models/Enrollment";import Attendance from "@/models/Attendance";import ClassAttendanceForm from "@/components/dashboard/attendance/ClassAttendanceForm";
-export const metadata={title:"Skill Center Attendance | AfghanUstad"};export default async function GuideAttendancePage({searchParams}:{searchParams:Promise<{date?:string;saved?:string;error?:string}>}){const s=await requireRole(["GUIDE"]);await connectDB();const p=await searchParams;const date=p.date&&/^\d{4}-\d{2}-\d{2}$/.test(p.date)?p.date:new Date().toISOString().slice(0,10);const classes=await ClassRecord.find({guide:s.user.id,status:{$ne:"COMPLETED"}}).populate("course","title").sort({name:1}).lean();const classViews=[];for(const cls of classes){const course=cls.course as unknown as {_id?:unknown;title?:string}|null;const [enrollments,legacy]=await Promise.all([Enrollment.find({class:cls._id,status:"ACTIVE"}).select("student").lean(),User.find({role:"STUDENT",isActive:true,$or:[{class:cls._id},{class:null,course:course?._id},{class:null,courseName:course?.title}]}).select("_id name studentId").sort({name:1}).lean()]);const legacyIds=legacy.map(u=>u._id);const anyEnrollments=await Enrollment.find({student:{$in:legacyIds}}).select("student").lean();const alreadyEnrolled=new Set(anyEnrollments.map(e=>String(e.student)));const ids=new Set([...enrollments.map(e=>String(e.student)),...legacy.filter(u=>!alreadyEnrolled.has(String(u._id))).map(u=>String(u._id))]);const students=ids.size?await User.find({_id:{$in:[...ids]},role:"STUDENT",isActive:true}).select("name studentId").sort({name:1}).lean():[];classViews.push({id:String(cls._id),name:cls.name,courseTitle:course?.title||"Course",schedule:cls.schedule,students:students.map(u=>({id:String(u._id),name:u.name,studentId:u.studentId||""}))});}const dateObj=new Date(`${date}T00:00:00.000Z`);const current=await Attendance.find({date:dateObj,class:{$in:classes.map(c=>c._id)}}).select("student status class").lean();const currentMap=new Map<string,string>(current.map(a=>[`${String(a.class)}:${String(a.student)}`,String(a.status)]));const errors:Record<string,string>={invalid:"Please choose a valid class and date.",class:"That class is not assigned to your guide account.",roster:"No active students were found in that class."};return <div className="space-y-5"><header><h1 className="text-2xl font-bold text-[#053B2E]">Skill Center Attendance</h1><p className="mt-2 text-sm text-slate-500">Choose the date, mark attendance for each assigned class, select all students at once if everyone is present, then save once per class.</p></header><form action="/guide/attendance" className="flex flex-wrap items-end gap-3 rounded-xl border bg-white p-4"><label className="text-sm font-medium">Attendance date<input type="date" name="date" defaultValue={date} className="mt-1 block rounded-lg border px-3 py-2"/></label><button className="rounded-lg bg-[#0B6B4F] px-4 py-2 text-sm font-semibold text-white">Load date</button></form>{p.saved&&<p className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-800">Class attendance saved.</p>}{p.error&&<p className="rounded-lg bg-red-50 p-3 text-sm text-red-800">{errors[p.error]||"Attendance could not be saved."}</p>}{classViews.map(cls=><ClassAttendanceForm key={cls.id} classId={cls.id} className={cls.name} courseTitle={cls.courseTitle} schedule={cls.schedule} students={cls.students} date={date} initialPresent={current.some(a=>String(a.class)===cls.id)?cls.students.filter(student=>["PRESENT","LATE"].includes(String(currentMap.get(`${cls.id}:${student.id}`)||""))).map(student=>student.id):cls.students.map(student=>student.id)}/>)}{!classViews.length&&<p className="rounded-xl border border-dashed bg-white p-6 text-sm text-slate-500">No classes have been assigned to your guide account yet.</p>}</div>}
+"use client";
+
+import { useState } from "react";
+import { saveClassAttendanceAction } from "@/app/guide/attendance/actions";
+
+type Student = {
+  id: string;
+  name: string;
+  studentId: string;
+};
+
+type ClassAttendanceFormProps = {
+  classId: string;
+  className: string;
+  courseTitle: string;
+  schedule: string;
+  teacherName: string;
+  hasExistingAttendance: boolean;
+  students: Student[];
+  date: string;
+  initialPresent?: string[];
+};
+
+export default function ClassAttendanceForm({
+  classId,
+  className,
+  courseTitle,
+  schedule,
+  teacherName,
+  hasExistingAttendance,
+  students,
+  date,
+  initialPresent = [],
+}: ClassAttendanceFormProps) {
+  const [present, setPresent] = useState<string[]>(initialPresent);
+
+  const all = students.length > 0 && present.length === students.length;
+
+  function toggle(id: string, checked: boolean) {
+    setPresent((current) =>
+      checked
+        ? [...new Set([...current, id])]
+        : current.filter((studentId) => studentId !== id),
+    );
+  }
+
+  return (
+    <section className="overflow-hidden rounded-xl border border-[#DCE7E2] bg-white">
+      {/* Class information */}
+      <div className="border-b border-[#DCE7E2] bg-slate-50 p-4">
+        <h2 className="font-semibold text-[#053B2E]">{className}</h2>
+
+        <div className="mt-2 space-y-1 text-sm text-slate-500">
+          <p>Course: {courseTitle}</p>
+          <p>Teacher: {teacherName || "Not assigned"}</p>
+          <p>Schedule: {schedule || "Not specified"}</p>
+          <p>Total students: {students.length}</p>
+          <p>Date: {date}</p>
+        </div>
+
+        {hasExistingAttendance && (
+          <p className="mt-3 text-sm font-medium text-amber-700">
+            Attendance has already been recorded for this date. You can update
+            it below.
+          </p>
+        )}
+      </div>
+
+      <form action={saveClassAttendanceAction} className="p-4">
+        <input type="hidden" name="classId" value={classId} />
+        <input type="hidden" name="date" value={date} />
+
+        {/* Attendance summary */}
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold text-[#12372E]">
+            <input
+              type="checkbox"
+              checked={all}
+              onChange={(e) =>
+                setPresent(
+                  e.target.checked ? students.map((student) => student.id) : [],
+                )
+              }
+              disabled={students.length === 0}
+              className="h-4 w-4 accent-[#0B6B4F]"
+            />
+            Select all students as present
+          </label>
+
+          <span className="text-xs font-medium text-slate-500">
+            {present.length} present · {students.length - present.length} absent
+          </span>
+        </div>
+
+        {/* Student list */}
+        <div className="divide-y divide-[#E8EFEB]">
+          {students.length === 0 ? (
+            <p className="py-6 text-center text-sm text-slate-500">
+              No students are registered in this class.
+            </p>
+          ) : (
+            students.map((student) => {
+              const isPresent = present.includes(student.id);
+
+              return (
+                <label
+                  key={student.id}
+                  className="flex cursor-pointer items-center justify-between gap-3 py-3 text-sm"
+                >
+                  <span>
+                    <span className="font-medium text-[#12372E]">
+                      {student.name}
+                    </span>
+
+                    <span className="ml-2 text-xs text-slate-500">
+                      {student.studentId || "ID pending"}
+                    </span>
+                  </span>
+
+                  <span className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={isPresent}
+                      onChange={(e) => toggle(student.id, e.target.checked)}
+                      className="h-4 w-4 accent-[#0B6B4F]"
+                    />
+
+                    <span
+                      className={
+                        isPresent
+                          ? "font-medium text-green-700"
+                          : "text-slate-500"
+                      }
+                    >
+                      {isPresent ? "Present" : "Absent"}
+                    </span>
+                  </span>
+                </label>
+              );
+            })
+          )}
+        </div>
+
+        {/* Hidden inputs submitted to the server action */}
+        {present.map((id) => (
+          <input key={id} type="hidden" name="presentStudent" value={id} />
+        ))}
+
+        <button
+          type="submit"
+          disabled={students.length === 0}
+          className="mt-5 w-full rounded-lg bg-[#0B6B4F] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#053B2E] disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {hasExistingAttendance
+            ? "Update attendance for this class"
+            : "Save attendance for this class"}
+        </button>
+      </form>
+    </section>
+  );
+}

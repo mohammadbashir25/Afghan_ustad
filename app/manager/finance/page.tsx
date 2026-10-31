@@ -74,8 +74,9 @@ export default async function Page({
   ] = await Promise.all([
     ClassRecord.find()
       .populate("course", "title")
+      .populate("teacher", "name")
       .sort({ name: 1 })
-      .select("name course")
+      .select("name course teacher schedule")
       .lean(),
     Payment.find({
       ...(classId ? { class: classId } : {}),
@@ -190,7 +191,11 @@ export default async function Page({
               <option key={String(c._id)} value={String(c._id)}>
                 {c.name} ·{" "}
                 {(c.course as unknown as { title?: string } | null)?.title ||
-                  "Course"}
+                  "Course"}{" "}
+                · Teacher:{" "}
+                {(c.teacher as unknown as { name?: string } | null)?.name ||
+                  "Not assigned"}{" "}
+                · {c.schedule || "Time not set"}
               </option>
             ))}
           </select>

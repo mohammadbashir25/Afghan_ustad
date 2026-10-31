@@ -25,7 +25,7 @@ export default async function Page({
     _id: id,
     role: "STUDENT",
   })
-    .select("name fatherName whatsappNumber")
+    .select("name fatherName whatsappNumber course class")
     .lean();
 
   if (!s) notFound();
@@ -80,6 +80,8 @@ export default async function Page({
           name: s.name,
           fatherName: s.fatherName || "",
           whatsappNumber: s.whatsappNumber || "",
+          classId: s.class ? String(s.class) : "",
+          courseId: s.course ? String(s.course) : "",
         }}
         classes={classes}
       />

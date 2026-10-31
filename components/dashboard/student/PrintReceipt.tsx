@@ -4,7 +4,11 @@ export type ReceiptData = {
   studentName: string;
   studentId: string;
   username: string;
+  initialPin: string;
   courseName: string;
+  className: string;
+  teacherName: string;
+  classSchedule: string;
   courseFee: number;
   amountPaid: number;
   balance: number;
@@ -28,7 +32,13 @@ export default function PrintReceipt({ data }: { data: ReceiptData }) {
         <p>Student: {data.studentName}</p>
         <p>ID: {data.studentId}</p>
         <p>Username: {data.username}</p>
+        <p>
+          PIN: <strong>{data.initialPin}</strong>
+        </p>
         <p>Course: {data.courseName}</p>
+        <p>Class: {data.className}</p>
+        <p>Teacher: {data.teacherName}</p>
+        <p>Time: {data.classSchedule}</p>
         <hr className="my-2 border-dashed border-black" />
         <div className="flex justify-between gap-2">
           <span>Course fee</span>

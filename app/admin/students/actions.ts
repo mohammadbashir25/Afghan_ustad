@@ -22,6 +22,9 @@ export type RegistrationState = {
     username: string;
     initialPin: string;
     courseName: string;
+    className: string;
+    teacherName: string;
+    classSchedule: string;
     courseFee: number;
     amountPaid: number;
     balance: number;
@@ -130,7 +133,8 @@ export async function registerStudentAction(
           course: course._id,
           status: { $ne: "COMPLETED" },
         })
-          .select("_id")
+          .select("_id name schedule teacher")
+          .populate("teacher", "name")
           .lean()
       : null;
 
@@ -284,6 +288,11 @@ export async function registerStudentAction(
         studentName: input.name,
         studentId,
         courseName: course.title,
+        className: selectedClass?.name || "Not assigned",
+        teacherName:
+          (selectedClass?.teacher as unknown as { name?: string } | null)
+            ?.name || "Not assigned",
+        classSchedule: selectedClass?.schedule || "Not assigned",
         courseFee: adjustedFee,
         discountAmount: input.discountAmount,
         class: selectedClass?._id ?? null,
@@ -325,6 +334,11 @@ export async function registerStudentAction(
         username: input.username,
         initialPin,
         courseName: course.title,
+        className: selectedClass?.name || "Not assigned",
+        teacherName:
+          (selectedClass?.teacher as unknown as { name?: string } | null)
+            ?.name || "Not assigned",
+        classSchedule: selectedClass?.schedule || "Not assigned",
         courseFee: adjustedFee,
         amountPaid: input.amountPaid,
         balance,
@@ -452,14 +466,89 @@ export async function updateStudentAction(
     };
   try {
     await connectDB();
+
+    const student = await User.findOne({ _id: studentId, role: "STUDENT" })
+      .select("_id course class")
+      .lean();
+    if (!student) return { success: false, message: "Student not found." };
+
+    const requestedClassId = textField(fd, "classId").trim();
+    let selectedClassId: typeof student.class = null;
+
+    if (requestedClassId) {
+      if (!/^[a-f\d]{24}$/i.test(requestedClassId)) {
+        return { success: false, message: "Please select a valid class." };
+      }
+
+      const selectedClass = await ClassRecord.findOne({
+        _id: requestedClassId,
+        status: { $ne: "COMPLETED" },
+        ...(student.course ? { course: student.course } : {}),
+      })
+        .select("_id course")
+        .lean();
+
+      if (!selectedClass) {
+        return {
+          success: false,
+          message:
+            "The selected class is not active or does not belong to this student's course.",
+        };
+      }
+      selectedClassId = selectedClass._id;
+
+      // Avoid violating the unique student/course/class enrollment index.
+      const duplicateEnrollment = await Enrollment.findOne({
+        student: student._id,
+        course: selectedClass.course,
+        class: selectedClass._id,
+        status: { $ne: "CANCELLED" },
+      })
+        .select("_id")
+        .lean();
+      const currentEnrollment = await Enrollment.findOne({
+        student: student._id,
+        course: selectedClass.course,
+        status: { $in: ["ACTIVE", "PENDING_PAYMENT"] },
+      })
+        .sort({ enrolledAt: -1 })
+        .select("_id class")
+        .lean();
+
+      if (
+        duplicateEnrollment &&
+        String(duplicateEnrollment._id) !== String(currentEnrollment?._id)
+      ) {
+        return {
+          success: false,
+          message:
+            "This student already has an enrollment in that class. Please check the student's existing enrollments.",
+        };
+      }
+    }
+
     const updated = await User.findOneAndUpdate(
       { _id: studentId, role: "STUDENT" },
-      { $set: { name, fatherName, whatsappNumber } },
+      { $set: { name, fatherName, whatsappNumber, class: selectedClassId } },
       { new: true, runValidators: true },
     )
-      .select("_id")
+      .select("_id course class")
       .lean();
     if (!updated) return { success: false, message: "Student not found." };
+
+    // Keep the student's current course enrollment in sync with the profile class.
+    if (updated.course) {
+      await Enrollment.findOneAndUpdate(
+        {
+          student: updated._id,
+          course: updated.course,
+          status: { $in: ["ACTIVE", "PENDING_PAYMENT"] },
+        },
+        { $set: { class: selectedClassId } },
+        { sort: { enrolledAt: -1 }, new: true },
+      );
+    }
+
     const AuditLog = (await import("@/models/AuditLog")).default;
     await AuditLog.create({
       actor: session.user.id,
@@ -467,12 +556,19 @@ export async function updateStudentAction(
       action: "STUDENT_UPDATED",
       targetType: "Student",
       targetId: studentId,
-      details: `Updated personal/contact details for ${name}.`,
+      details: `Updated personal/contact details and class assignment for ${name}. New class: ${selectedClassId ? String(selectedClassId) : "Unassigned"}.`,
     });
     revalidatePath("/admin/students");
     revalidatePath("/manager/students");
     revalidatePath("/manager/student-history");
-    return { success: true, message: "Student record updated." };
+    revalidatePath("/guide/attendance");
+    revalidatePath("/guide/students");
+    revalidatePath("/student");
+    revalidatePath("/student/courses");
+    return {
+      success: true,
+      message: "Student details and class assignment updated.",
+    };
   } catch (error) {
     console.error("updateStudentAction failed", error);
     return { success: false, message: "Could not update the student record." };

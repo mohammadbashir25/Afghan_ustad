@@ -148,7 +148,8 @@ export default async function ManagerStudentsPage({ searchParams }: PageProps) {
       .lean(),
 
     ClassRecord.find({ status: "ACTIVE" })
-      .select("_id name course schedule")
+      .populate("teacher", "name")
+      .select("_id name course schedule teacher")
       .sort({ name: 1 })
       .lean(),
   ]);
@@ -323,7 +324,10 @@ export default async function ManagerStudentsPage({ searchParams }: PageProps) {
               <option value="">All active classes</option>
               {availableClasses.map((cls) => (
                 <option key={cls._id.toString()} value={cls._id.toString()}>
-                  {cls.name} · {cls.schedule}
+                  {cls.name} · Teacher:{" "}
+                  {(cls.teacher as unknown as { name?: string } | null)?.name ||
+                    "Not assigned"}{" "}
+                  · {cls.schedule}
                 </option>
               ))}
             </select>

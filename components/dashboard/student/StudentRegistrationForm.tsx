@@ -30,6 +30,7 @@ type ClassOption = {
   courseId: string;
   courseTitle: string;
   schedule: string;
+  teacherName: string;
 };
 
 export default function StudentRegistrationForm({
@@ -258,8 +259,8 @@ export default function StudentRegistrationForm({
             </strong>
           </p>
           <p className="mt-2 text-xs">
-            This PIN is shown only in this confirmation and is never printed on
-            the payment receipt. Share it privately.
+            This PIN is also printed on the registration receipt. Give the
+            receipt directly to the student and keep the PIN private.
           </p>
         </section>
 
@@ -467,7 +468,7 @@ export default function StudentRegistrationForm({
             .filter((cls) => cls.courseId === selectedCourseId)
             .map((cls) => (
               <option key={cls.id} value={cls.id}>
-                {cls.name} · {cls.schedule}
+                {cls.name} · Teacher: {cls.teacherName} · {cls.schedule}
               </option>
             ))}
         </select>
