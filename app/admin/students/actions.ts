@@ -1,5 +1,5 @@
 "use server";
-
+import { encryptStudentPin } from "@/lib/security/student-pin";
 import { randomInt } from "node:crypto";
 import bcrypt from "bcrypt";
 import { revalidatePath } from "next/cache";
@@ -251,6 +251,7 @@ export async function registerStudentAction(
       username: input.username,
       studentId,
       pinHash: await bcrypt.hash(initialPin, 12),
+      pinEncrypted: encryptStudentPin(initialPin),
       course: course._id,
       class: selectedClass?._id ?? null,
       courseName: course.title,

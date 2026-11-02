@@ -12,15 +12,15 @@ const userSchema = new Schema(
     },
     name: { type: String, required: true, trim: true },
 
-email: {
-  type: String,
-  required: function (this: { role?: string }) {
-    return this.role !== "STUDENT";
-  },
-  lowercase: true,
-  trim: true,
-  default: undefined,
-},
+    email: {
+      type: String,
+      required: function (this: { role?: string }) {
+        return this.role !== "STUDENT";
+      },
+      lowercase: true,
+      trim: true,
+      default: undefined,
+    },
     fatherName: { type: String, trim: true, maxlength: 120, default: "" },
     whatsappNumber: {
       type: String,
@@ -48,7 +48,7 @@ email: {
       trim: true,
     },
     pinHash: { type: String, select: false },
-
+    pinEncrypted: { type: String, select: false },
     course: {
       type: Schema.Types.ObjectId,
       ref: "Course",

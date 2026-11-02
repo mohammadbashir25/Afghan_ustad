@@ -23,9 +23,9 @@ type StudentRow = {
   id: string;
   name: string;
   email: string;
-  whatsappNumber?: string;
   status: "ACTIVE" | "INACTIVE";
   createdAt: string | null;
+  latestReceiptId: string | null;
 };
 
 type SearchParamValue = string | string[] | undefined;
@@ -105,21 +105,40 @@ const columns: DashboardTableColumn<StudentRow>[] = [
   {
     key: "actions",
     header: "Manage Account",
-    className: "min-w-40",
+    className: "min-w-[230px]",
     render: (student) => (
-      <div className="space-y-2">
-        <Link
-          href={`/manager/students/${student.id}/edit`}
-          className="inline-flex rounded-lg border border-[#DCE7E2] px-3 py-2 text-sm font-medium text-[#0B6B4F] hover:bg-[#E6F4EE]"
-        >
-          Edit student
-        </Link>
+      <div className="flex flex-col items-start gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href={`/manager/students/${student.id}/edit`}
+            className={`inline-flex h-9 items-center justify-center rounded-lg bg-[#0B6B4F] px-3 text-xs font-semibold text-white transition hover:bg-[#053B2E] ${FOCUS_RING}`}
+          >
+            Edit Student
+          </Link>
+
+          {student.status === "ACTIVE" && (
+            <ResetStudentPinButton studentId={student.id} />
+          )}
+        </div>
+
         <StudentStatusToggle
           studentId={student.id}
           isActive={student.status === "ACTIVE"}
         />
-        {student.status === "ACTIVE" && (
-          <ResetStudentPinButton studentId={student.id} />
+
+        {student.latestReceiptId ? (
+          <Link
+            href={`/manager/students/enroll/receipt/${student.latestReceiptId}`}
+            target="_blank"
+            className={`inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-[#0B6B4F] bg-white px-3 text-xs font-semibold text-[#0B6B4F] transition hover:bg-[#E6F4EE] ${FOCUS_RING}`}
+          >
+            <FiSearch aria-hidden className="size-3.5" />
+            Print Latest Receipt
+          </Link>
+        ) : (
+          <span className="inline-flex h-9 items-center rounded-lg bg-[#F1F5F3] px-3 text-xs text-[#64748B]">
+            No receipt available
+          </span>
         )}
       </div>
     ),
@@ -218,15 +237,45 @@ export default async function ManagerStudentsPage({ searchParams }: PageProps) {
     .limit(200)
     .lean();
 
-  const students: StudentRow[] = records.map((student) => ({
-    id: student._id.toString(),
-    name: student.name,
-    email: student.email || student.whatsappNumber || "—",
-    status: student.isActive ? "ACTIVE" : "INACTIVE",
-    createdAt: student.createdAt
-      ? new Date(student.createdAt).toISOString()
-      : null,
-  }));
+  // Find the latest non-cancelled enrollment for each displayed student.
+  const studentObjectIds = records.map((student) => student._id);
+
+  const latestEnrollments = studentObjectIds.length
+    ? await Enrollment.find({
+        student: { $in: studentObjectIds },
+        status: { $ne: "CANCELLED" },
+      })
+        .select("_id student enrolledAt createdAt")
+        .sort({ enrolledAt: -1, createdAt: -1 })
+        .lean()
+    : [];
+
+  // The enrollments are sorted newest first, so keep only the first per student.
+  const latestReceiptByStudent = new Map<string, string>();
+
+  for (const enrollment of latestEnrollments) {
+    const id = enrollment.student.toString();
+
+    if (!latestReceiptByStudent.has(id)) {
+      latestReceiptByStudent.set(id, enrollment._id.toString());
+    }
+  }
+
+  const students: StudentRow[] = records.map((student) => {
+    const id = student._id.toString();
+
+    return {
+      id,
+      name: student.name,
+      email: student.email || student.whatsappNumber || "—",
+      status: student.isActive ? "ACTIVE" : "INACTIVE",
+      createdAt: student.createdAt
+        ? new Date(student.createdAt).toISOString()
+        : null,
+      latestReceiptId: latestReceiptByStudent.get(id) ?? null,
+    };
+  });
+
   const hasFilters = Boolean(query || status || validCourseId || validClassId);
 
   return (
@@ -287,6 +336,7 @@ export default async function ManagerStudentsPage({ searchParams }: PageProps) {
               <option value="inactive">Inactive</option>
             </select>
           </div>
+
           <div className="sm:w-52">
             <label htmlFor="student-course" className="sr-only">
               Filter by course
@@ -332,6 +382,7 @@ export default async function ManagerStudentsPage({ searchParams }: PageProps) {
               ))}
             </select>
           </div>
+
           <div className="flex items-center gap-2">
             <button
               type="submit"
