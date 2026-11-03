@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 import { requireRole } from "@/lib/auth/requireRole";
 import { connectDB } from "@/lib/mongodb";
@@ -7,13 +6,28 @@ import User from "@/models/User";
 import Enrollment from "@/models/Enrollment";
 import Payment from "@/models/Payment";
 
+export const metadata = {
+  title: "Registration & Enrollment Report | AfghanUstad",
+};
+
+type SearchParams = Promise<{
+  from?: string;
+  to?: string;
+  q?: string;
+}>;
+
 type PersonInfo = {
+  _id?: unknown;
   name?: string;
   studentId?: string;
+  fatherName?: string;
   whatsappNumber?: string;
+  registrationDate?: Date | string;
+  createdAt?: Date | string;
 };
 
 type ClassInfo = {
+  _id?: unknown;
   name?: string;
   schedule?: string;
   teacher?: PersonInfo | null;
@@ -23,6 +37,7 @@ type ClassInfo = {
 type StudentRegistration = {
   _id: unknown;
   name: string;
+  fatherName?: string;
   studentId?: string;
   username?: string;
   whatsappNumber?: string;
@@ -61,129 +76,131 @@ type PaymentRecord = {
   method?: string;
 };
 
-type AllPaymentRecord = {
+type PaymentBalanceRecord = {
   enrollment?: unknown;
   amountPaid?: number;
 };
 
-export const metadata = {
-  title: "Registration & Enrollment Report | AfghanUstad",
-};
+function formatMoney(value: number) {
+  return `${(Number(value) || 0).toLocaleString("en-US")} AFN`;
+}
 
-type SearchParams = Promise<{
-  from?: string;
-  to?: string;
-  q?: string;
-}>;
-
-const formatMoney = (value: number) =>
-  `${(Number(value) || 0).toLocaleString("en-US")} AFN`;
-
-const formatDate = (value?: Date | string | null) => {
+function formatDate(value?: Date | string | null) {
   if (!value) return "—";
 
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) return "—";
 
-  return date.toLocaleDateString("en-GB", {
+  return new Intl.DateTimeFormat("en-GB", {
     day: "2-digit",
     month: "short",
     year: "numeric",
-  });
-};
+    timeZone: "Asia/Kabul",
+  }).format(date);
+}
 
-const escapeRegex = (value: string) =>
-  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+function getKabulDateString(date: Date) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kabul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
 
-const getId = (value: unknown) => String(value ?? "");
+  const year = parts.find((part) => part.type === "year")?.value;
+  const month = parts.find((part) => part.type === "month")?.value;
+  const day = parts.find((part) => part.type === "day")?.value;
+
+  return `${year}-${month}-${day}`;
+}
 
 function getDefaultDateRange() {
   const today = new Date();
   const from = new Date(today);
 
   // Five calendar days, including today.
-  from.setDate(today.getDate() - 4);
-
-  const toDate = (date: Date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-
-    return `${year}-${month}-${day}`;
-  };
+  from.setUTCDate(from.getUTCDate() - 4);
 
   return {
-    from: toDate(from),
-    to: toDate(today),
+    from: getKabulDateString(from),
+    to: getKabulDateString(today),
   };
 }
 
+function isValidDateString(value?: string) {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+
+  const date = new Date(`${value}T00:00:00Z`);
+
+  return (
+    !Number.isNaN(date.getTime()) &&
+    date.toISOString().slice(0, 10) === value
+  );
+}
+
+/**
+ * Date inputs are Afghanistan calendar dates.
+ * Kabul is UTC+04:30.
+ *
+ * The upper boundary is exclusive, so the entire selected
+ * "To" date is included.
+ */
 function makeDateFilter(from: string, to: string) {
-  const filter: { $gte?: Date; $lt?: Date } = {};
+  const start = new Date(`${from}T00:00:00+04:30`);
 
-  if (from) {
-    filter.$gte = new Date(`${from}T00:00:00.000Z`);
-  }
+  const nextDay = new Date(`${to}T00:00:00Z`);
+  nextDay.setUTCDate(nextDay.getUTCDate() + 1);
 
-  if (to) {
-    const end = new Date(`${to}T00:00:00.000Z`);
-    end.setUTCDate(end.getUTCDate() + 1);
-    filter.$lt = end;
-  }
+  const nextDayString = nextDay.toISOString().slice(0, 10);
+  const end = new Date(`${nextDayString}T00:00:00+04:30`);
 
-  return filter;
+  return {
+    $gte: start,
+    $lt: end,
+  };
 }
 
-function registrationClass(student: StudentRegistration) {
-  const classInfo = student.class;
+function getId(value: unknown): string {
+  if (value === null || value === undefined) return "";
 
+  if (typeof value === "object" && "_id" in value) {
+    return String(value._id ?? "");
+  }
+
+  return String(value);
+}
+
+function getPersonName(person?: PersonInfo | null) {
+  return person?.name || "—";
+}
+
+function formatClass(classInfo?: ClassInfo | null) {
   if (!classInfo) return "Not assigned";
 
   const parts = [
-    classInfo.name,
+    classInfo.name || "Class not assigned",
     classInfo.teacher?.name
       ? `Teacher: ${classInfo.teacher.name}`
       : null,
     classInfo.guide?.name
       ? `Guide: ${classInfo.guide.name}`
       : null,
-    classInfo.schedule,
+    classInfo.schedule || null,
   ].filter(Boolean);
 
-  return parts.length ? parts.join(" · ") : "Not assigned";
+  return parts.join(" • ");
 }
 
-function enrollmentClass(enrollment: EnrollmentRecord) {
-  const classInfo = enrollment.class;
-
-  if (!classInfo) return "Not assigned";
-
-  const parts = [
-    classInfo.name,
-    classInfo.teacher?.name
-      ? `Teacher: ${classInfo.teacher.name}`
-      : null,
-    classInfo.guide?.name
-      ? `Guide: ${classInfo.guide.name}`
-      : null,
-    classInfo.schedule,
-  ].filter(Boolean);
-
-  return parts.length ? parts.join(" · ") : "Not assigned";
-}
-
-function matchesSearch(
-  search: string,
-  values: Array<string | undefined | null>,
-) {
+function includesSearch(values: unknown[], search: string) {
   if (!search) return true;
 
-  const normalizedSearch = search.toLowerCase();
+  const text = values
+    .filter((value) => value !== null && value !== undefined)
+    .join(" ")
+    .toLowerCase();
 
-  return values.some((value) =>
-    String(value ?? "").toLowerCase().includes(normalizedSearch),
-  );
+  return text.includes(search.toLowerCase());
 }
 
 export default async function RegistrationEnrollmentReportPage({
@@ -197,28 +214,34 @@ export default async function RegistrationEnrollmentReportPage({
   const params = await searchParams;
   const defaults = getDefaultDateRange();
 
-  const from = /^\d{4}-\d{2}-\d{2}$/.test(params.from || "")
+  const from = isValidDateString(params.from)
     ? params.from!
     : defaults.from;
 
-  const to = /^\d{4}-\d{2}-\d{2}$/.test(params.to || "")
+  const to = isValidDateString(params.to)
     ? params.to!
     : defaults.to;
 
   const search = (params.q || "").trim();
+
   const dateFilter = makeDateFilter(from, to);
 
-  const studentFilter: Record<string, unknown> = {
+  // IMPORTANT:
+  // Registration records are filtered by registrationDate,
+  // NOT by createdAt.
+  const studentFilter = {
     role: "STUDENT",
     registrationDate: dateFilter,
   };
 
-  const enrollmentFilter: Record<string, unknown> = {
+  // Each enrollment is filtered by its own enrolledAt date.
+  const enrollmentFilter = {
     enrolledAt: dateFilter,
     status: { $ne: "CANCELLED" },
   };
 
-  const paymentFilter: Record<string, unknown> = {
+  // Payments are filtered by their actual paidAt date.
+  const paymentFilter = {
     paidAt: dateFilter,
   };
 
@@ -230,7 +253,7 @@ export default async function RegistrationEnrollmentReportPage({
   ] = await Promise.all([
     User.find(studentFilter)
       .select(
-        "name studentId username whatsappNumber registrationDate createdAt courseName courseFee discountAmount class isActive",
+        "name fatherName studentId username whatsappNumber registrationDate createdAt courseName courseFee discountAmount class isActive",
       )
       .populate({
         path: "class",
@@ -241,11 +264,14 @@ export default async function RegistrationEnrollmentReportPage({
         ],
       })
       .sort({ registrationDate: -1 })
-      .limit(1000)
+      .limit(2000)
       .lean(),
 
     Enrollment.find(enrollmentFilter)
-      .populate("student", "name studentId whatsappNumber")
+      .populate(
+        "student",
+        "name studentId whatsappNumber registrationDate createdAt",
+      )
       .populate({
         path: "class",
         select: "name schedule teacher guide",
@@ -255,17 +281,22 @@ export default async function RegistrationEnrollmentReportPage({
         ],
       })
       .sort({ enrolledAt: -1 })
-      .limit(2000)
+      .limit(3000)
       .lean(),
 
     Payment.find(paymentFilter)
       .populate("student", "name studentId")
       .populate("receivedBy", "name")
-      .populate("class", "name")
+      .populate({
+        path: "class",
+        select: "name",
+      })
       .sort({ paidAt: -1 })
-      .limit(2000)
+      .limit(3000)
       .lean(),
 
+    // All payment history is needed to calculate the current
+    // balance of enrollments in the selected date range.
     Payment.find()
       .select("enrollment amountPaid")
       .lean(),
@@ -281,90 +312,100 @@ export default async function RegistrationEnrollmentReportPage({
     periodPaymentsRaw as unknown as PaymentRecord[];
 
   const allPayments =
-    allPaymentsRaw as unknown as AllPaymentRecord[];
+    allPaymentsRaw as unknown as PaymentBalanceRecord[];
 
-  // Search registrations by student information.
-  const filteredRegistrations = registrations.filter((student) =>
-    matchesSearch(search, [
-      student.name,
-      student.studentId,
-      student.username,
-      student.whatsappNumber,
-      student.courseName,
-      student.class?.name,
-      student.class?.teacher?.name,
-      student.class?.guide?.name,
-    ]),
-  );
-
-  // Search enrollments by student, course, and class.
-  const filteredEnrollments = enrollments.filter((enrollment) =>
-    matchesSearch(search, [
-      enrollment.student?.name,
-      enrollment.student?.studentId,
-      enrollment.student?.whatsappNumber,
-      enrollment.courseName,
-      enrollment.class?.name,
-      enrollment.class?.teacher?.name,
-      enrollment.class?.guide?.name,
-    ]),
-  );
-
-  // Search payments by student, course, and receipt.
-  const filteredPayments = periodPayments.filter((payment) =>
-    matchesSearch(search, [
-      payment.student?.name,
-      payment.student?.studentId,
-      payment.studentName,
-      payment.studentId,
-      payment.courseName,
-      payment.receiptNumber,
-      payment.class?.name,
-      payment.method,
-    ]),
-  );
-
-  // Calculate all-time payments for each enrollment.
-  // This is used for outstanding balances, not the selected date range.
+  // Calculate total payments for each enrollment.
   const paidByEnrollment = new Map<string, number>();
 
   for (const payment of allPayments) {
-    if (!payment.enrollment) continue;
-
     const enrollmentId = getId(payment.enrollment);
-    const amount = Number(payment.amountPaid || 0);
+
+    if (!enrollmentId) continue;
+
+    const previousAmount = paidByEnrollment.get(enrollmentId) || 0;
 
     paidByEnrollment.set(
       enrollmentId,
-      (paidByEnrollment.get(enrollmentId) || 0) + amount,
+      previousAmount + Number(payment.amountPaid || 0),
     );
   }
 
+  // Search is applied independently to each report section.
+  const filteredRegistrations = registrations.filter((student) =>
+    includesSearch(
+      [
+        student.name,
+        student.fatherName,
+        student.studentId,
+        student.username,
+        student.whatsappNumber,
+        student.courseName,
+        student.class?.name,
+        student.class?.teacher?.name,
+        student.class?.guide?.name,
+      ],
+      search,
+    ),
+  );
+
+  const filteredEnrollments = enrollments.filter((enrollment) =>
+    includesSearch(
+      [
+        enrollment.student?.name,
+        enrollment.student?.studentId,
+        enrollment.student?.whatsappNumber,
+        enrollment.courseName,
+        enrollment.class?.name,
+        enrollment.class?.teacher?.name,
+        enrollment.class?.guide?.name,
+        enrollment.status,
+      ],
+      search,
+    ),
+  );
+
+  const filteredPayments = periodPayments.filter((payment) =>
+    includesSearch(
+      [
+        payment.student?.name,
+        payment.studentName,
+        payment.student?.studentId,
+        payment.studentId,
+        payment.courseName,
+        payment.receiptNumber,
+        payment.method,
+      ],
+      search,
+    ),
+  );
+
+  // Summary calculations use the same filtered records shown below.
+  const registrationCount = filteredRegistrations.length;
+  const enrollmentCount = filteredEnrollments.length;
+
   const totalCollected = filteredPayments.reduce(
-    (total, payment) => total + Number(payment.amountPaid || 0),
+    (sum, payment) => sum + Number(payment.amountPaid || 0),
     0,
   );
 
+  // Enrollment.courseFee is already the fee after discount.
+  // Do not subtract discount again.
   const totalEnrollmentFees = filteredEnrollments.reduce(
-    (total, enrollment) =>
-      total + Number(enrollment.courseFee || 0),
+    (sum, enrollment) => sum + Number(enrollment.courseFee || 0),
     0,
   );
 
   const totalDiscounts = filteredEnrollments.reduce(
-    (total, enrollment) =>
-      total + Number(enrollment.discountAmount || 0),
+    (sum, enrollment) => sum + Number(enrollment.discountAmount || 0),
     0,
   );
 
   const totalOutstanding = filteredEnrollments.reduce(
-    (total, enrollment) => {
-      const paid =
-        paidByEnrollment.get(getId(enrollment._id)) || 0;
-
+    (sum, enrollment) => {
+      const paid = paidByEnrollment.get(String(enrollment._id)) || 0;
       const fee = Number(enrollment.courseFee || 0);
 
-      return total + Math.max(0, fee - paid);
+      return sum + Math.max(0, fee - paid);
     },
     0,
   );
@@ -383,8 +424,8 @@ export default async function RegistrationEnrollmentReportPage({
           </h1>
 
           <p className="mt-2 text-sm text-slate-500">
-            Track student registration dates, account creation,
-            enrollments, payments, and outstanding balances.
+            See exactly who registered, who enrolled, and how much money
+            was collected during the selected dates.
           </p>
         </div>
 
@@ -402,21 +443,24 @@ export default async function RegistrationEnrollmentReportPage({
         className="grid gap-3 rounded-2xl border border-[#DCE7E2] bg-white p-4 md:grid-cols-[1fr_1fr_1.5fr_auto_auto]"
       >
         <label className="text-sm font-medium text-slate-700">
-          From
+          From date
           <input
             type="date"
             name="from"
             defaultValue={from}
+            required
             className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm"
           />
         </label>
 
         <label className="text-sm font-medium text-slate-700">
-          To
+          To date
           <input
             type="date"
             name="to"
             defaultValue={to}
+            required
+            min={from}
             className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm"
           />
         </label>
@@ -447,30 +491,44 @@ export default async function RegistrationEnrollmentReportPage({
         </Link>
       </form>
 
-      <p className="text-xs text-slate-500">
-        Date range: {formatDate(`${from}T00:00:00`)} –{" "}
-        {formatDate(`${to}T00:00:00`)}. Registration counts use
-        registration date, enrollment counts use enrollment date,
-        and collected money uses payment date.
-      </p>
+      <div className="rounded-xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-900">
+        <p className="font-semibold">How the date filter works</p>
+        <ul className="mt-2 list-inside list-disc space-y-1">
+          <li>
+            Registrations are filtered by the date selected in the
+            registration form.
+          </li>
+          <li>
+            Enrollments are filtered by the enrollment creation date
+            (enrolledAt).
+          </li>
+          <li>
+            Payments are filtered by the date the payment was received
+            (paidAt).
+          </li>
+        </ul>
+        <p className="mt-2 text-xs text-blue-800">
+          Selected period: {from} to {to} (Afghanistan time).
+        </p>
+      </div>
 
       {/* Summary cards */}
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         {[
           {
             label: "Student registrations",
-            value: filteredRegistrations.length.toLocaleString(),
+            value: registrationCount.toLocaleString(),
             note: "By registration date",
           },
           {
             label: "New enrollments",
-            value: filteredEnrollments.length.toLocaleString(),
-            note: "By enrollment date",
+            value: enrollmentCount.toLocaleString(),
+            note: "By enrolledAt date",
           },
           {
             label: "Money collected",
             value: formatMoney(totalCollected),
-            note: "Payments received in this range",
+            note: "Payments received in this period",
           },
           {
             label: "Enrollment fees",
@@ -488,33 +546,36 @@ export default async function RegistrationEnrollmentReportPage({
             className="rounded-2xl border border-[#DCE7E2] bg-white p-4"
           >
             <p className="text-sm text-slate-500">{item.label}</p>
-
             <p className="mt-2 break-words text-xl font-bold text-[#12372E]">
               {item.value}
             </p>
-
-            <p className="mt-1 text-xs text-slate-400">
-              {item.note}
-            </p>
+            <p className="mt-1 text-xs text-slate-400">{item.note}</p>
           </div>
         ))}
       </section>
 
-      {/* Registration records */}
+      {/* Student registrations */}
       <section className="overflow-hidden rounded-2xl border border-[#DCE7E2] bg-white">
         <div className="border-b border-slate-100 p-4">
-          <h2 className="text-lg font-bold text-[#12372E]">
-            Student Registrations
-          </h2>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 className="text-lg font-bold text-[#12372E]">
+                Student Registrations
+              </h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Students whose registration form date falls within the
+                selected period.
+              </p>
+            </div>
 
-          <p className="mt-1 text-sm text-slate-500">
-            Registration date and account creation date are displayed
-            separately.
-          </p>
+            <span className="rounded-full bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700">
+              {registrationCount} students
+            </span>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1050px] text-left text-sm">
+          <table className="w-full min-w-[1100px] text-left text-sm">
             <thead className="bg-slate-50 text-xs uppercase text-slate-500">
               <tr>
                 <th className="px-4 py-3">Student</th>
@@ -531,7 +592,7 @@ export default async function RegistrationEnrollmentReportPage({
             <tbody className="divide-y divide-slate-100">
               {filteredRegistrations.map((student) => (
                 <tr
-                  key={getId(student._id)}
+                  key={String(student._id)}
                   className="hover:bg-slate-50"
                 >
                   <td className="px-4 py-3 font-semibold text-slate-800">
@@ -546,11 +607,11 @@ export default async function RegistrationEnrollmentReportPage({
                     {student.whatsappNumber || "—"}
                   </td>
 
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 font-semibold text-emerald-700">
                     {formatDate(student.registrationDate)}
                   </td>
 
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 text-slate-500">
                     {formatDate(student.createdAt)}
                   </td>
 
@@ -558,8 +619,8 @@ export default async function RegistrationEnrollmentReportPage({
                     {student.courseName || "—"}
                   </td>
 
-                  <td className="px-4 py-3">
-                    {registrationClass(student)}
+                  <td className="max-w-[280px] px-4 py-3">
+                    {formatClass(student.class)}
                   </td>
 
                   <td className="px-4 py-3">
@@ -594,24 +655,32 @@ export default async function RegistrationEnrollmentReportPage({
       {/* Enrollment records */}
       <section className="overflow-hidden rounded-2xl border border-[#DCE7E2] bg-white">
         <div className="border-b border-slate-100 p-4">
-          <h2 className="text-lg font-bold text-[#12372E]">
-            Enrollment Records
-          </h2>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 className="text-lg font-bold text-[#12372E]">
+                Enrollment Records
+              </h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Every enrollment created during this period, including
+                existing students enrolled in another course.
+              </p>
+            </div>
 
-          <p className="mt-1 text-sm text-slate-500">
-            Each enrollment is listed separately, including additional
-            enrollments for existing students.
-          </p>
+            <span className="rounded-full bg-blue-50 px-3 py-1 text-sm font-semibold text-blue-700">
+              {enrollmentCount} enrollments
+            </span>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1050px] text-left text-sm">
+          <table className="w-full min-w-[1250px] text-left text-sm">
             <thead className="bg-slate-50 text-xs uppercase text-slate-500">
               <tr>
                 <th className="px-4 py-3">Student</th>
                 <th className="px-4 py-3">Student ID</th>
                 <th className="px-4 py-3">Course</th>
                 <th className="px-4 py-3">Class / Teacher / Guide</th>
+                <th className="px-4 py-3">Original registration</th>
                 <th className="px-4 py-3">Enrollment date</th>
                 <th className="px-4 py-3">Fee after discount</th>
                 <th className="px-4 py-3">Discount</th>
@@ -623,34 +692,39 @@ export default async function RegistrationEnrollmentReportPage({
 
             <tbody className="divide-y divide-slate-100">
               {filteredEnrollments.map((enrollment) => {
+                const student = enrollment.student;
                 const paid =
-                  paidByEnrollment.get(getId(enrollment._id)) || 0;
+                  paidByEnrollment.get(String(enrollment._id)) || 0;
 
                 const fee = Number(enrollment.courseFee || 0);
                 const balance = Math.max(0, fee - paid);
 
                 return (
                   <tr
-                    key={getId(enrollment._id)}
+                    key={String(enrollment._id)}
                     className="hover:bg-slate-50"
                   >
                     <td className="px-4 py-3 font-semibold text-slate-800">
-                      {enrollment.student?.name || "Unknown student"}
+                      {getPersonName(student)}
                     </td>
 
                     <td className="px-4 py-3">
-                      {enrollment.student?.studentId || "—"}
+                      {student?.studentId || "—"}
                     </td>
 
                     <td className="px-4 py-3">
                       {enrollment.courseName || "—"}
                     </td>
 
-                    <td className="px-4 py-3">
-                      {enrollmentClass(enrollment)}
+                    <td className="max-w-[280px] px-4 py-3">
+                      {formatClass(enrollment.class)}
                     </td>
 
                     <td className="px-4 py-3">
+                      {formatDate(student?.registrationDate)}
+                    </td>
+
+                    <td className="px-4 py-3 font-semibold text-blue-700">
                       {formatDate(enrollment.enrolledAt)}
                     </td>
 
@@ -659,9 +733,7 @@ export default async function RegistrationEnrollmentReportPage({
                     </td>
 
                     <td className="px-4 py-3">
-                      {formatMoney(
-                        Number(enrollment.discountAmount || 0),
-                      )}
+                      {formatMoney(enrollment.discountAmount || 0)}
                     </td>
 
                     <td className="px-4 py-3">
@@ -682,7 +754,7 @@ export default async function RegistrationEnrollmentReportPage({
               {filteredEnrollments.length === 0 && (
                 <tr>
                   <td
-                    colSpan={10}
+                    colSpan={11}
                     className="px-4 py-10 text-center text-slate-500"
                   >
                     No enrollments found for this date range.
@@ -694,28 +766,34 @@ export default async function RegistrationEnrollmentReportPage({
         </div>
 
         <div className="border-t border-slate-100 px-4 py-3 text-sm text-slate-500">
-          Discounts recorded for these enrollments:{" "}
+          Discounts for these enrollments:{" "}
           <strong className="text-[#12372E]">
             {formatMoney(totalDiscounts)}
           </strong>
         </div>
       </section>
 
-      {/* Payment records */}
+      {/* Payments */}
       <section className="overflow-hidden rounded-2xl border border-[#DCE7E2] bg-white">
         <div className="border-b border-slate-100 p-4">
-          <h2 className="text-lg font-bold text-[#12372E]">
-            Payments Received
-          </h2>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 className="text-lg font-bold text-[#12372E]">
+                Payments Received
+              </h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Payments received during the selected period.
+              </p>
+            </div>
 
-          <p className="mt-1 text-sm text-slate-500">
-            Only money actually received during the selected period
-            is included in the collected total.
-          </p>
+            <span className="rounded-full bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700">
+              {formatMoney(totalCollected)}
+            </span>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[900px] text-left text-sm">
+          <table className="w-full min-w-[1000px] text-left text-sm">
             <thead className="bg-slate-50 text-xs uppercase text-slate-500">
               <tr>
                 <th className="px-4 py-3">Payment date</th>
@@ -733,7 +811,7 @@ export default async function RegistrationEnrollmentReportPage({
             <tbody className="divide-y divide-slate-100">
               {filteredPayments.map((payment) => (
                 <tr
-                  key={getId(payment._id)}
+                  key={String(payment._id)}
                   className="hover:bg-slate-50"
                 >
                   <td className="px-4 py-3">
@@ -765,7 +843,7 @@ export default async function RegistrationEnrollmentReportPage({
                   </td>
 
                   <td className="px-4 py-3 font-semibold text-emerald-700">
-                    {formatMoney(Number(payment.amountPaid || 0))}
+                    {formatMoney(payment.amountPaid || 0)}
                   </td>
 
                   <td className="px-4 py-3">
