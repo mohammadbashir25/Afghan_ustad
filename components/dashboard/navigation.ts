@@ -91,6 +91,11 @@ export const SUPER_ADMIN_NAVIGATION: DashboardNavSection[] = [
     title: "Finance",
     items: [
       {
+        href: "/admin/registration-enrollment-report",
+        label: "Registration & Enrollment Report",
+        icon: FiClipboard,
+      },
+      {
         href: "/admin/finance",
         label: "Finance & Payments",
         icon: FiDollarSign,
