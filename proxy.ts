@@ -21,6 +21,8 @@ export default function proxy(request: Parameters<typeof intlMiddleware>[0]) {
     pathname.startsWith("/api/") ||
         pathname === "/teacher" ||
     pathname.startsWith("/teacher/") ||
+            pathname === "/operations" ||
+    pathname.startsWith("/operations/") ||
     pathname === "/api"
   ) {
     return;
