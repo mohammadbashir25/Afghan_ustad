@@ -252,7 +252,7 @@ export async function setStaffActiveAction(
 
     const staff = await User.findOne({
       _id: userId,
-      role: { $in: ["MANAGER", "GUIDE", "TEACHER", "STAFF"] },
+      role: { $in: ["MANAGER", "OPERATIONS_MANAGER", "GUIDE", "TEACHER", "STAFF"] },
     }).select("_id name role isActive");
 
     if (!staff) {
@@ -306,7 +306,7 @@ export async function resetStaffPasswordAction(
 
     const staff = await User.findOne({
       _id: userId,
-      role: { $in: ["MANAGER", "GUIDE", "TEACHER", "STAFF"] },
+      role: { $in: ["MANAGER", "OPERATIONS_MANAGER", "GUIDE", "TEACHER", "STAFF"] },
       isActive: true,
     }).select("_id name role");
 
@@ -370,7 +370,7 @@ export async function deleteStaffAccountAction(
 
     const staff = await User.findOne({
       _id: userId,
-      role: { $in: ["MANAGER", "GUIDE", "TEACHER", "STAFF"] },
+      role: { $in: ["MANAGER", "OPERATIONS_MANAGER", "GUIDE", "TEACHER", "STAFF"] },
     }).select("_id name role").lean();
 
     if (!staff) {

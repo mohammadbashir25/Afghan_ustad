@@ -261,5 +261,5 @@ export async function saveClassAttendanceAction(fd: FormData) {
   revalidatePath("/admin/attendance");
 
   // Redirect after saving.
-  redirect(`${base}?date=${dateText}&saved=1`);
+  redirect(`${base}?classId=${classId}&date=${dateText}&saved=1`);
 }

@@ -100,7 +100,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const { email, password } = parsed.data;
         const staff = await User.findOne({
           email: email.toLowerCase(),
-          role: { $in: ["SUPER_ADMIN", "MANAGER", "GUIDE", "TEACHER", "STAFF"] },
+          role: { $in: ["SUPER_ADMIN", "MANAGER", "OPERATIONS_MANAGER", "GUIDE", "TEACHER", "STAFF"] },
         }).select("+password");
 
         if (!staff || !staff.isActive || !staff.password) { await failedLogin(); return null; }

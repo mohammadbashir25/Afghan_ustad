@@ -9,7 +9,7 @@ import { z } from "zod";
 
 import type { CreateUserField } from "./createUserState";
 
-const CREATABLE_ROLE_VALUES = ["MANAGER", "GUIDE", "TEACHER", "STAFF"] as const;
+const CREATABLE_ROLE_VALUES = ["MANAGER", "OPERATIONS_MANAGER", "GUIDE", "TEACHER", "STAFF"] as const;
 
 export const createUserSchema = z
   .object({

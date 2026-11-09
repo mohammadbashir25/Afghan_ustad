@@ -18,13 +18,18 @@ const monthlyTestSchema = new Schema(
     year: { type: Number, required: true, min: 2020, max: 2200 },
     testDate: { type: Date, required: true },
     maxScore: { type: Number, required: true, min: 1, default: 100 },
+    gradingMode: {
+      type: String,
+      enum: ["LEGACY_PRACTICAL_60_40", "MCQ_SKILL_50_50"],
+      default: "LEGACY_PRACTICAL_60_40",
+    },
     instructions: { type: String, default: "", maxlength: 3000 },
     questions: [
       {
         prompt: { type: String, required: true, trim: true, maxlength: 1500 },
         type: {
           type: String,
-          enum: ["MULTIPLE_CHOICE", "PRACTICAL", "PROJECT_UPLOAD"],
+          enum: ["MULTIPLE_CHOICE"],
           required: true,
         },
         options: [{ type: String, trim: true, maxlength: 300 }],

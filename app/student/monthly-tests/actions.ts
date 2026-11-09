@@ -9,8 +9,8 @@ import Enrollment from "@/models/Enrollment";
 import MonthlyTest from "@/models/MonthlyTest";
 import MonthlyTestAttempt from "@/models/MonthlyTestAttempt";
 import AuditLog from "@/models/AuditLog";
-import Performance from "@/models/Performance";
 import MonthlyTestResult from "@/models/MonthlyTestResult";
+import Performance from "@/models/Performance";
 export async function submitMonthlyTestAction(fd: FormData) {
   const session = await requireStudent();
   const testId = String(fd.get("testId") || "");
@@ -43,25 +43,63 @@ export async function submitMonthlyTestAction(fd: FormData) {
     await MonthlyTestAttempt.exists({ test: testId, student: session.user.id })
   )
     redirect("/student/monthly-tests?error=already-submitted");
-  const answers: Array<{ questionIndex: number; answer: string }> = [];
-  let earned = 0,
-    possible = 0,
-    pendingManualPoints = 0;
-  for (let i = 0; i < test.questions.length; i++) {
-    const q = test.questions[i];
-    const answer = String(fd.get(`answer_${i}`) || "")
-      .trim()
-      .slice(0, 5000);
-    answers.push({ questionIndex: i, answer });
-    if (q.type === "MULTIPLE_CHOICE") {
-      possible += q.points;
-      if (answer && Number(answer) === q.correctOption) earned += q.points;
-    } else pendingManualPoints += q.points;
+  if (!Array.isArray(test.questions) || test.questions.length < 2 ||
+      test.questions.some((question: { type?: string; options?: string[]; correctOption?: number }) =>
+        question.type !== "MULTIPLE_CHOICE" ||
+        !Array.isArray(question.options) ||
+        question.options.length !== 4 ||
+        !Number.isInteger(question.correctOption)
+      )) {
+    redirect("/student/monthly-tests?error=invalid");
   }
-  if (!answers.some((a) => a.answer))
-    redirect("/student/monthly-tests?error=empty");
-  const autoScore =
-    possible > 0 ? Math.round((earned / possible) * 10000) / 100 : 0;
+
+  const answers: Array<{ questionIndex: number; answer: string }> = [];
+  let earned = 0;
+  let possible = 0;
+  let correctAnswers = 0;
+
+  for (let i = 0; i < test.questions.length; i++) {
+    const question = test.questions[i];
+    const rawAnswer = String(fd.get(`answer_${i}`) ?? "").trim();
+    const selected = Number(rawAnswer);
+
+    if (!rawAnswer || !Number.isInteger(selected) || selected < 0 || selected >= question.options.length) {
+      redirect("/student/monthly-tests?error=incomplete");
+    }
+
+    answers.push({ questionIndex: i, answer: String(selected) });
+    possible += question.points;
+    if (selected === question.correctOption) {
+      earned += question.points;
+      correctAnswers += 1;
+    }
+  }
+
+  const autoScore = possible > 0
+    ? Math.round((earned / possible) * 10000) / 100
+    : 0;
+
+  const monthStart = new Date(Date.UTC(test.year, test.month - 1, 1));
+  const monthEnd = new Date(Date.UTC(test.year, test.month, 1));
+  const skillRows = await Performance.find({
+    student: session.user.id,
+    course: test.course,
+    class: test.class,
+    assignment: { $ne: null },
+    date: { $gte: monthStart, $lt: monthEnd },
+  }).select("score maxScore").lean();
+  const skillCenterScore = skillRows.length
+    ? Math.round(
+        skillRows.reduce((sum, row) => sum + (row.maxScore > 0 ? (row.score / row.maxScore) * 100 : 0), 0) /
+        skillRows.length * 100,
+      ) / 100
+    : 0;
+  const overallScore = skillRows.length
+    ? test.gradingMode === "MCQ_SKILL_50_50"
+      ? Math.round(((autoScore + skillCenterScore) / 2) * 100) / 100
+      : Math.round((skillCenterScore * 0.6 + autoScore * 0.4) * 100) / 100
+    : autoScore;
+
   try {
     const attempt = await MonthlyTestAttempt.create({
       test: testId,
@@ -69,62 +107,35 @@ export async function submitMonthlyTestAction(fd: FormData) {
       answers,
       autoScore,
       autoGradedPoints: possible,
-      pendingManualPoints,
-      status: "SUBMITTED",
+      pendingManualPoints: 0,
+      status: "REVIEWED",
       submittedAt: new Date(),
     });
-    if (pendingManualPoints === 0 && possible > 0) {
-      const start = new Date(Date.UTC(test.year, test.month - 1, 1));
-      const end = new Date(Date.UTC(test.year, test.month, 1));
-      const practicalRows = await Performance.find({
-        student: session.user.id,
-        course: test.course,
-        class: test.class,
-        assignment: { $ne: null },
-        date: { $gte: start, $lt: end },
-      })
-        .select("score maxScore")
-        .lean();
-      if (practicalRows.length) {
-        const practicalScore =
-          Math.round(
-            (practicalRows.reduce(
-              (sum, row) =>
-                sum + (row.maxScore > 0 ? (row.score / row.maxScore) * 100 : 0),
-              0,
-            ) /
-              practicalRows.length) *
-              100,
-          ) / 100;
-        const finalScore =
-          Math.round((practicalScore * 0.6 + autoScore * 0.4) * 100) / 100;
-        await MonthlyTestResult.findOneAndUpdate(
-          { test: testId, student: session.user.id },
-          {
-            $set: {
-              test: testId,
-              student: session.user.id,
-              practicalScore,
-              testScore: autoScore,
-              finalScore,
-              practicalEvidence: `${practicalRows.length} recorded Skill Center task evaluations for ${test.month}/${test.year}`,
-              feedback:
-                "Multiple-choice test auto-graded. Practical score calculated from recorded Skill Center task evaluations.",
-              recordedBy: session.user.id,
-              recordedAt: new Date(),
-            },
-          },
-          { upsert: true, new: true, runValidators: true },
-        );
-      }
-    }
+
+    await MonthlyTestResult.findOneAndUpdate(
+      { test: testId, student: session.user.id },
+      {
+        $set: {
+          test: testId,
+          student: session.user.id,
+          practicalScore: skillCenterScore,
+          testScore: autoScore,
+          finalScore: overallScore,
+          practicalEvidence: `${skillRows.length} Skill Center task evaluations recorded for ${test.month}/${test.year}.`,
+          feedback: `Automatically graded: ${correctAnswers} of ${test.questions.length} questions correct. Overall monthly score combines exam and Skill Center task average.`,
+          recordedBy: session.user.id,
+          recordedAt: new Date(),
+        },
+      },
+      { upsert: true, new: true, runValidators: true },
+    );
     await AuditLog.create({
       actor: session.user.id,
       actorName: session.user.name || "Student",
       action: "MONTHLY_TEST_SUBMITTED",
       targetType: "MonthlyTestAttempt",
       targetId: String(attempt._id),
-      details: `Submitted monthly test ${test.title}. Automatically graded score: ${autoScore}/100; manual review points: ${pendingManualPoints}.`,
+      details: `Submitted monthly MCQ test ${test.title}. Exam: ${autoScore}/100; Skill Center: ${skillCenterScore}/100; overall: ${overallScore}/100; ${correctAnswers} correct answers.`,
     });
   } catch (error) {
     if (

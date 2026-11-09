@@ -33,7 +33,7 @@ export async function recordStaffPerformanceAction(fd: FormData) {
   await connectDB();
   const staff = await User.findOne({
     _id: staffId,
-    role: { $in: ["MANAGER", "GUIDE", "TEACHER", "STAFF"] },
+    role: { $in: ["MANAGER", "OPERATIONS_MANAGER", "GUIDE", "TEACHER", "STAFF"] },
     isActive: true,
   })
     .select("name role")

@@ -28,6 +28,7 @@ export default async function ManagerLayout({ children }: { children: ReactNode 
   if (session.user.role !== "MANAGER") {
     if (session.user.role === "STUDENT") redirect("/student");
     if (session.user.role === "SUPER_ADMIN") redirect("/admin");
+    if (session.user.role === "OPERATIONS_MANAGER") redirect("/operations");
     if (session.user.role === "GUIDE") redirect("/guide");
     if (session.user.role === "TEACHER") redirect("/teacher");
     if (session.user.role === "STAFF") redirect("/staff");

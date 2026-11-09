@@ -26,6 +26,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   if (session.user.role !== "SUPER_ADMIN") {
     if (session.user.role === "STUDENT") redirect("/student");
     if (session.user.role === "MANAGER") redirect("/manager");
+    if (session.user.role === "OPERATIONS_MANAGER") redirect("/operations");
     if (session.user.role === "GUIDE") redirect("/guide");
     if (session.user.role === "TEACHER") redirect("/teacher");
     if (session.user.role === "STAFF") redirect("/staff");

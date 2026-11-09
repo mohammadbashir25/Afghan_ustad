@@ -38,10 +38,10 @@ export async function saveTaskEvaluationAction(fd: FormData) {
     _id: task.class,
     guide: s.user.id,
   })
-    .select("_id name course teacher")
+    .select("_id name course teacher status")
     .lean();
 
-  if (!cls) {
+  if (!cls || cls.status === "COMPLETED") {
     redirect("/guide/assignments?error=permission");
   }
 
@@ -92,6 +92,16 @@ export async function saveTaskEvaluationAction(fd: FormData) {
 
   if (!roster.length) {
     redirect(`/guide/assignments/${assignmentId}/evaluate?error=roster`);
+  }
+
+  // Once every active student has an evaluation, the assignment is immutable.
+  const evaluatedStudents = await Performance.distinct("student", {
+    assignment: assignmentId,
+    class: cls._id,
+    student: { $in: roster },
+  });
+  if (evaluatedStudents.length >= roster.length) {
+    redirect(`/guide/assignments/${assignmentId}/evaluate?error=locked`);
   }
 
   const scores: Array<{
@@ -153,6 +163,18 @@ export async function saveTaskEvaluationAction(fd: FormData) {
         new: true,
         runValidators: true,
       },
+    );
+  }
+
+  const finalEvaluatedStudents = await Performance.distinct("student", {
+    assignment: assignmentId,
+    class: cls._id,
+    student: { $in: roster },
+  });
+  if (finalEvaluatedStudents.length >= roster.length) {
+    await Assignment.updateOne(
+      { _id: assignmentId, status: "PUBLISHED" },
+      { $set: { status: "CLOSED" } },
     );
   }
 

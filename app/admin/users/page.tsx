@@ -49,6 +49,7 @@ const STATUS_FILTER_LABELS: Record<UserStatusFilter, string> = {
 const STAFF_ROLES = [
   "SUPER_ADMIN",
   "MANAGER",
+  "OPERATIONS_MANAGER",
   "GUIDE",
   "TEACHER",
   "STAFF",
@@ -62,6 +63,7 @@ function isStatusFilter(value: string): value is UserStatusFilter {
 const ROLE_STYLES: Record<UserRow["role"], string> = {
   SUPER_ADMIN: "bg-[#053B2E] text-white",
   MANAGER: "bg-[#E6F4EE] text-[#053B2E]",
+  OPERATIONS_MANAGER: "bg-indigo-100 text-indigo-800",
   GUIDE: "bg-[#FFF4C2] text-[#12372E]",
   STUDENT: "bg-[#F1F5F3] text-[#64748B]",
   TEACHER: "bg-sky-100 text-sky-800",
@@ -183,7 +185,7 @@ export default async function AdminUsersPage({ searchParams }: UsersPageProps) {
       <DashboardPageHeader
         eyebrow="People"
         title="Users"
-        description="Review every account on the platform and add new Managers, Guides and Students."
+        description="Review every account on the platform and add Managers, Operations Managers, Guides and other staff."
         actions={
           // The /admin/users/new page is built in step 4; this link 404s until then.
           <Link

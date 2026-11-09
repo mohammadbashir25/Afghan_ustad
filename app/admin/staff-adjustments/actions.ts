@@ -9,11 +9,11 @@ import AuditLog from "@/models/AuditLog";
 import Notification from "@/models/Notification";
 
 export async function recordStaffAdjustmentAction(fd: FormData) {
-  const session = await requireRole(["SUPER_ADMIN", "MANAGER"]);
+  const session = await requireRole(["SUPER_ADMIN", "OPERATIONS_MANAGER"]);
   const base =
     session.user.role === "SUPER_ADMIN"
       ? "/admin/staff-adjustments"
-      : "/manager/staff-adjustments";
+      : "/operations/staff-adjustments";
   const staffId = String(fd.get("staffId") || "");
   const type = String(fd.get("type") || "");
   const amount = Number(fd.get("amount"));
@@ -32,7 +32,7 @@ export async function recordStaffAdjustmentAction(fd: FormData) {
   await connectDB();
   const staff = await User.findOne({
     _id: staffId,
-    role: { $in: ["MANAGER", "GUIDE", "TEACHER", "STAFF"] },
+    role: { $in: ["MANAGER", "OPERATIONS_MANAGER", "GUIDE", "TEACHER", "STAFF"] },
   })
     .select("name role")
     .lean();
@@ -68,6 +68,7 @@ export async function recordStaffAdjustmentAction(fd: FormData) {
   });
   revalidatePath("/admin/staff-adjustments");
   revalidatePath("/manager/staff-adjustments");
+  revalidatePath("/operations/staff-adjustments");
   revalidatePath("/admin/finance");
   revalidatePath("/manager/finance");
   redirect(`${base}?saved=1`);

@@ -4,12 +4,13 @@
  * import from both server and client code.
  */
 
-export const USER_ROLES = ["SUPER_ADMIN", "MANAGER", "GUIDE", "TEACHER", "STAFF", "STUDENT"] as const;
+export const USER_ROLES = ["SUPER_ADMIN", "MANAGER", "OPERATIONS_MANAGER", "GUIDE", "TEACHER", "STAFF", "STUDENT"] as const;
 export type UserRole = (typeof USER_ROLES)[number];
 
 export const ROLE_LABELS: Record<UserRole, string> = {
   SUPER_ADMIN: "Super Admin",
   MANAGER: "Manager",
+  OPERATIONS_MANAGER: "Operations Manager",
   GUIDE: "Skill Center Guide",
   TEACHER: "Teacher",
   STAFF: "Other Staff",
@@ -24,6 +25,7 @@ export function isUserRole(value: string): value is UserRole {
 export const DASHBOARD_HOME: Record<UserRole, string> = {
   SUPER_ADMIN: "/admin",
   MANAGER: "/manager",
+  OPERATIONS_MANAGER: "/operations",
   GUIDE: "/guide",
   TEACHER: "/teacher",
   STAFF: "/staff",
@@ -36,8 +38,9 @@ export const DASHBOARD_HOME: Record<UserRole, string> = {
  * MANAGER may register students through the dedicated registration workflow, but cannot create staff accounts.
  */
 export const CREATABLE_ROLES: Record<UserRole, readonly UserRole[]> = {
-  SUPER_ADMIN: ["MANAGER", "GUIDE", "TEACHER", "STAFF"],
+  SUPER_ADMIN: ["MANAGER", "OPERATIONS_MANAGER", "GUIDE", "TEACHER", "STAFF"],
   MANAGER: [],
+  OPERATIONS_MANAGER: [],
   GUIDE: [],
   TEACHER: [],
   STAFF: [],

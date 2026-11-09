@@ -25,10 +25,7 @@ import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
 
-import {
-  DASHBOARD_ROLE_CONFIG,
-  type DashboardRole,
-} from "../navigation";
+import { DASHBOARD_ROLE_CONFIG, type DashboardRole } from "../navigation";
 import DashboardHeader from "./DashboardHeader";
 import type { DashboardHeaderProps } from "./DashboardHeader";
 import DashboardSidebar from "./DashboardSidebar";
@@ -156,7 +153,21 @@ export default function DashboardShell({
           onOpenMobileMenu={() => setMobileOpen(true)}
           onLogout={onLogout}
           profileHref={config.profileHref}
-          notificationsHref={role === "SUPER_ADMIN" ? "/admin/notifications" : role === "MANAGER" ? "/manager/notifications" : role === "GUIDE" ? "/guide/notifications" : role === "TEACHER" ? "/teacher/notifications" : role === "STAFF" ? "/staff/notifications" : "/student/notifications"}
+          notificationsHref={
+            role === "SUPER_ADMIN"
+              ? "/admin/notifications"
+              : role === "MANAGER"
+                ? "/manager/notifications"
+                : role === "OPERATIONS_MANAGER"
+                  ? "/operations/notifications"
+                  : role === "GUIDE"
+                    ? "/guide/notifications"
+                    : role === "TEACHER"
+                      ? "/teacher/notifications"
+                      : role === "STAFF"
+                        ? "/staff/notifications"
+                        : "/student/notifications"
+          }
           labels={headerLabels}
         />
 

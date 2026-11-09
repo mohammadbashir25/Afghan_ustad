@@ -1,0 +1,3 @@
+import NotificationList from "@/components/dashboard/notifications/NotificationList";
+export const metadata = { title: "Notifications | AfghanUstad" };
+export default function Page() { return <NotificationList role="OPERATIONS_MANAGER" />; }

@@ -13,104 +13,58 @@ import AuditLog from "@/models/AuditLog";
 const val = (fd: FormData, key: string) => String(fd.get(key) ?? "").trim();
 export async function createMonthlyTestAction(fd: FormData) {
   const s = await requireRole(["SUPER_ADMIN", "MANAGER"]);
-  const base =
-    s.user.role === "MANAGER"
-      ? "/manager/monthly-tests"
-      : "/admin/monthly-tests";
-  const title = val(fd, "title"),
-    classId = val(fd, "classId"),
-    month = Number(val(fd, "month")),
-    year = Number(val(fd, "year")),
-    dateText = val(fd, "testDate"),
-    instructions = val(fd, "instructions");
-  let questions: Array<{
-    prompt: string;
-    type: "MULTIPLE_CHOICE" | "PRACTICAL" | "PROJECT_UPLOAD";
-    options: string[];
-    correctOption: number;
-    points: number;
-  }> = [];
-  let practicalTasks: Array<{
-    title: string;
-    instructions: string;
-    points: number;
-    requiresUpload: boolean;
-  }> = [];
+  const base = s.user.role === "MANAGER" ? "/manager/monthly-tests" : "/admin/monthly-tests";
+  const title = val(fd, "title");
+  const classId = val(fd, "classId");
+  const month = Number(val(fd, "month"));
+  const year = Number(val(fd, "year"));
+  const dateText = val(fd, "testDate");
+  const instructions = val(fd, "instructions");
+  let questions: Array<{ prompt: string; type: "MULTIPLE_CHOICE"; options: string[]; correctOption: number; points: number }> = [];
+
   try {
     questions = JSON.parse(val(fd, "questionsJson") || "[]");
-    practicalTasks = JSON.parse(val(fd, "practicalTasksJson") || "[]");
   } catch {
     redirect(`${base}?error=invalid`);
   }
-  const validQuestionTypes = new Set([
-    "MULTIPLE_CHOICE",
-    "PRACTICAL",
-    "PROJECT_UPLOAD",
-  ]);
+
   if (
     !Array.isArray(questions) ||
     questions.length < 2 ||
-    questions.length > 50 ||
-    questions.some(
-      (q) =>
-        !q ||
-        typeof q.prompt !== "string" ||
-        q.prompt.trim().length < 2 ||
-        !validQuestionTypes.has(q.type) ||
-        !Number.isFinite(q.points) ||
-        q.points < 1 ||
-        q.points > 100 ||
-        (q.type === "MULTIPLE_CHOICE" &&
-          (!Array.isArray(q.options) ||
-            q.options.length !== 4 ||
-            q.options.some((o) => typeof o !== "string" || !o.trim()) ||
-            !Number.isInteger(q.correctOption) ||
-            q.correctOption < 0 ||
-            q.correctOption > 3)),
+    questions.length > 100 ||
+    questions.some((q) =>
+      !q ||
+      q.type !== "MULTIPLE_CHOICE" ||
+      typeof q.prompt !== "string" ||
+      q.prompt.trim().length < 2 ||
+      !Array.isArray(q.options) ||
+      q.options.length !== 4 ||
+      q.options.some((option) => typeof option !== "string" || !option.trim() || option.length > 300) ||
+      !Number.isInteger(q.correctOption) ||
+      q.correctOption < 0 ||
+      q.correctOption > 3 ||
+      !Number.isFinite(q.points) ||
+      q.points < 1 ||
+      q.points > 100
     )
-  )
-    redirect(`${base}?error=questions`);
-  if (
-    !Array.isArray(practicalTasks) ||
-    practicalTasks.length < 1 ||
-    practicalTasks.length > 30 ||
-    practicalTasks.some(
-      (t) =>
-        !t ||
-        typeof t.title !== "string" ||
-        t.title.trim().length < 2 ||
-        typeof t.instructions !== "string" ||
-        t.instructions.trim().length < 3 ||
-        !Number.isFinite(t.points) ||
-        t.points < 1 ||
-        t.points > 100 ||
-        typeof t.requiresUpload !== "boolean",
-    )
-  )
-    redirect(`${base}?error=tasks`);
+  ) redirect(`${base}?error=questions`);
+
   if (
     title.length < 2 ||
     title.length > 160 ||
-    !/^[a-f\d]{24}$/i.test(classId) ||
-    !Number.isInteger(month) ||
-    month < 1 ||
-    month > 12 ||
-    !Number.isInteger(year) ||
-    year < 2020 ||
-    year > 2200 ||
-    !/^\d{4}-\d{2}-\d{2}$/.test(dateText) ||
-    instructions.length > 3000
-  )
-    redirect(`${base}?error=invalid`);
-  if (
+    !/^[a-f\\d]{24}$/i.test(classId) ||
+    !Number.isInteger(month) || month < 1 || month > 12 ||
+    !Number.isInteger(year) || year < 2020 || year > 2200 ||
+    !/^\\d{4}-\\d{2}-\\d{2}$/.test(dateText) ||
+    instructions.length > 3000 ||
     Number(dateText.slice(5, 7)) !== month ||
     Number(dateText.slice(0, 4)) !== year
-  )
-    redirect(`${base}?error=invalid`);
+  ) redirect(`${base}?error=invalid`);
+
   await connectDB();
-  const cls = await ClassRecord.findById(classId).select("course guide").lean();
+  const cls = await ClassRecord.findById(classId).select("course").lean();
   if (!cls) redirect(`${base}?error=class`);
-  if (s.user.role === "MANAGER" && !cls) redirect(`${base}?error=class`);
+
   try {
     const test = await MonthlyTest.create({
       title,
@@ -120,25 +74,35 @@ export async function createMonthlyTestAction(fd: FormData) {
       year,
       testDate: new Date(`${dateText}T00:00:00.000Z`),
       maxScore: 100,
+      gradingMode: "MCQ_SKILL_50_50",
       instructions,
-      questions,
-      practicalTasks,
+      questions: questions.map((q) => ({
+        prompt: q.prompt.trim(),
+        type: "MULTIPLE_CHOICE",
+        options: q.options.map((option) => option.trim()),
+        correctOption: q.correctOption,
+        points: q.points,
+      })),
+      practicalTasks: [],
       status: "OPEN",
       createdBy: s.user.id,
     });
+
     await AuditLog.create({
       actor: s.user.id,
       actorName: s.user.name || s.user.email || "Staff",
       action: "MONTHLY_TEST_CREATED",
       targetType: "MonthlyTest",
       targetId: String(test._id),
-      details: `${title} for ${month}/${year}.`,
+      details: `${title} for ${month}/${year}; ${questions.length} multiple-choice questions.`,
     });
-  } catch (e) {
-    if (typeof e === "object" && e && "code" in e && e.code === 11000)
+  } catch (error) {
+    if (typeof error === "object" && error && "code" in error && error.code === 11000) {
       redirect(`${base}?error=duplicate`);
-    throw e;
+    }
+    throw error;
   }
+
   revalidatePath(base);
   revalidatePath("/guide/monthly-tests");
   redirect(`${base}?created=1`);
@@ -167,6 +131,9 @@ export async function recordMonthlyTestResultAction(fd: FormData) {
   await connectDB();
   const test = await MonthlyTest.findById(testId).lean();
   if (!test) redirect(`${base}?error=test`);
+  if (Array.isArray(test.questions) && test.questions.length > 0 && test.questions.every((question: { type?: string }) => question.type === "MULTIPLE_CHOICE")) {
+    redirect(`${base}?error=auto-graded`);
+  }
   const cls = await ClassRecord.findById(test.class)
     .select("guide course")
     .lean();

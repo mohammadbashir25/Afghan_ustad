@@ -23,7 +23,9 @@ export default async function AdminOverviewPage() {
     User.countDocuments({ role: "STUDENT" }),
     User.countDocuments({ role: "STUDENT", isActive: true }),
     Course.countDocuments({ status: "ACTIVE" }),
-    User.countDocuments({ role: { $in: ["SUPER_ADMIN", "MANAGER", "GUIDE"] } }),
+    User.countDocuments({
+      role: { $in: ["SUPER_ADMIN", "MANAGER", "OPERATIONS_MANAGER", "GUIDE"] },
+    }),
     Payment.find()
       .select("student courseName amountPaid balanceAfterPayment paidAt")
       .sort({ paidAt: -1 })

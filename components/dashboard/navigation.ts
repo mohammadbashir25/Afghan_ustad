@@ -25,6 +25,7 @@ import type { DashboardNavSection } from "./Layout/DashboardSidebar";
 export const DASHBOARD_ROLES = [
   "SUPER_ADMIN",
   "MANAGER",
+  "OPERATIONS_MANAGER",
   "GUIDE",
   "TEACHER",
   "STAFF",
@@ -84,6 +85,7 @@ export const SUPER_ADMIN_NAVIGATION: DashboardNavSection[] = [
     title: "Operations",
     items: [
       { href: "/admin/attendance", label: "Attendance", icon: FiCheckSquare },
+      { href: "/admin/operations", label: "Operations Task Control", icon: FiClipboard },
     ],
   },
   {
@@ -192,11 +194,6 @@ export const MANAGER_NAVIGATION: DashboardNavSection[] = [
         label: "Student Attendance",
         icon: FiCheckSquare,
       },
-      {
-        href: "/manager/staff-attendance",
-        label: "Staff Attendance",
-        icon: FiCheckSquare,
-      },
       { href: "/manager/skill-center", label: "Skill Center", icon: FiGrid },
       {
         href: "/manager/monthly-tests",
@@ -213,31 +210,25 @@ export const MANAGER_NAVIGATION: DashboardNavSection[] = [
       { href: "/manager/finance", label: "Finance", icon: FiDollarSign },
       { href: "/manager/expenses", label: "Daily Expenses", icon: FiCoffee },
       { href: "/manager/reports", label: "Reports", icon: FiTrendingUp },
-      {
-        href: "/manager/announcements",
-        label: "Announcements",
-        icon: FiMessageSquare,
-      },
-      {
-        href: "/manager/notifications",
-        label: "Notifications",
-        icon: FiMessageSquare,
-      },
-      {
-        href: "/manager/website",
-        label: "Website & Content",
-        icon: FiFileText,
-      },
-      {
-        href: "/manager/staff-adjustments",
-        label: "Staff Fines & Gifts",
-        icon: FiDollarSign,
-      },
-      {
-        href: "/manager/staff-performance",
-        label: "Staff KPI & Performance",
-        icon: FiActivity,
-      },
+      { href: "/manager/website", label: "Website & Content", icon: FiFileText },
+      { href: "/manager/staff-performance", label: "Staff KPI & Performance", icon: FiActivity },
+    ],
+  },
+];
+export const OPERATIONS_MANAGER_NAVIGATION: DashboardNavSection[] = [
+  {
+    id: "overview",
+    title: "Overview",
+    items: [
+      { href: "/operations", label: "Dashboard Overview", icon: FiHome },
+      { href: "/operations/tasks", label: "My Daily Tasks", icon: FiCheckSquare },
+      { href: "/operations/classes", label: "Class & Schedule Monitoring", icon: FiCalendar },
+      { href: "/operations/attendance", label: "Student Attendance Monitoring", icon: FiUsers },
+      { href: "/operations/staff-attendance", label: "Staff Attendance", icon: FiCheckSquare },
+      { href: "/operations/staff-adjustments", label: "Staff Fines & Gifts", icon: FiDollarSign },
+      { href: "/operations/announcements", label: "Announcements", icon: FiMessageSquare },
+      { href: "/operations/notifications", label: "Notifications", icon: FiMessageSquare },
+      { href: "/operations/profile", label: "My Profile", icon: FiUser },
     ],
   },
 ];
@@ -431,6 +422,13 @@ export const DASHBOARD_ROLE_CONFIG: Record<DashboardRole, DashboardRoleConfig> =
       brandSubtitle: "Management",
       defaultRoleLabel: "Manager",
       sections: MANAGER_NAVIGATION,
+    },
+    OPERATIONS_MANAGER: {
+      homeHref: "/operations",
+      profileHref: "/operations/profile",
+      brandSubtitle: "Daily Operations",
+      defaultRoleLabel: "Operations Manager",
+      sections: OPERATIONS_MANAGER_NAVIGATION,
     },
     GUIDE: {
       homeHref: "/guide",

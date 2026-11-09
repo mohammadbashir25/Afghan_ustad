@@ -30,7 +30,7 @@ export default async function AdminNewUserPage() {
       <DashboardPageHeader
         eyebrow="People"
         title="Add User"
-        description="Create Manager, Skill Center Guide, Teacher, or Other Staff accounts. Student registration and course payment are handled by the Manager."
+        description="Create Manager, Operations Manager, Skill Center Guide, Teacher, or Other Staff accounts. Student registration and course payment are handled by the Manager."
       />
       <CreateUserForm roles={roles} />
     </div>

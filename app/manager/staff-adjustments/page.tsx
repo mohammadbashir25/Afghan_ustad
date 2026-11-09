@@ -1,3 +1,5 @@
-import StaffAdjustmentsPage from "@/components/dashboard/finance/StaffAdjustmentsPage";
+import { redirect } from "next/navigation";
 export const metadata = { title: "Staff Fines & Gifts | AfghanUstad" };
-export default async function Page({searchParams}:{searchParams:Promise<{saved?:string;error?:string}>}) { return <StaffAdjustmentsPage role="MANAGER" searchParams={searchParams} />; }
+export default function ManagerStaffAdjustmentsPage() {
+  redirect("/manager");
+}
